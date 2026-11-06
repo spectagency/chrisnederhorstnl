@@ -1,0 +1,44 @@
+---
+// TODO: definitieve contactpagina (adres showroom, telefoon, formulier?).
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/layout/Breadcrumbs.astro';
+import { SITE } from '../data/site';
+import { ID, ref } from '../lib/schema';
+import type { Crumb } from '../components/layout/Breadcrumbs.astro';
+
+const title = 'Contact';
+const description = `Neem contact op met ${SITE.author.name}.`;
+
+const crumbs: Crumb[] = [{ label: 'Home', href: '/' }, { label: title }];
+
+// ContactPage met een ContactPoint op de persoon.
+const contactPage = {
+  '@type': 'ContactPage',
+  mainEntity: {
+    ...ref(ID.author),
+    contactPoint: {
+      '@type': 'ContactPoint',
+      email: SITE.email,
+      availableLanguage: ['nl'],
+    },
+  },
+};
+---
+<BaseLayout title={title} description={description} breadcrumbs={crumbs} page={contactPage}>
+  <Fragment slot="hero">
+    <div class="shell"><div class="pagehead">
+      <Breadcrumbs items={crumbs} />
+      <h1>Contact</h1>
+      <p class="lead">{description}</p>
+    </div></div>
+  </Fragment>
+
+  <div class="content single">
+    <div class="main">
+      <div class="keypoint">
+        <span class="blabel">E-mailadres</span>
+        <p><a href={`mailto:${SITE.email}`}>{SITE.email}</a></p>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,109 @@
+---
+import Mark from './Mark.astro';
+import { getNavGroups, findNavLocation } from '../../data/navigation';
+
+// Bepaal welke groep/pagina actief is, zodat de topnav dat kan markeren.
+const current = Astro.url.pathname.replace(/\/$/, '') || '/';
+const NAV_GROUPS = await getNavGroups();
+const loc = await findNavLocation(current);
+const activeGroup = loc?.group.title;
+
+// Vanaf dit aantal items wordt de dropdown tweekoloms (zie .dd.cols2 in global.css).
+const COLS2_FROM = 7;
+---
+<div class="topbar"><div class="shell"><div class="nav">
+  <a href="/" class="brand">
+    <Mark />
+    <span class="word">Chris Nederhorst</span>
+  </a>
+
+  <nav class="topnav" aria-label="Hoofdmenu">
+    {NAV_GROUPS.map((group) => (
+      <div class="ni">
+        <button
+          type="button"
+          class={`nl${activeGroup === group.title ? ' current' : ''}`}
+          aria-expanded="false"
+          aria-haspopup="true"
+          data-dd
+        >
+          {group.title}
+          <svg class="caret" viewBox="0 0 20 20" width="14" height="14" aria-hidden="true">
+            <path d="M6 8l4 4 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+        <div class={`dd${group.items.length >= COLS2_FROM ? ' cols2' : ''}`} role="menu">
+          {group.items.map((item) => (
+            <a
+              role="menuitem"
+              href={item.href}
+              class={loc?.item.href === item.href ? 'active' : undefined}
+              aria-current={loc?.item.href === item.href ? 'page' : undefined}
+            >
+              <span class="ddt">{item.label}</span>
+              {item.sub && <span class="dds">{item.sub}</span>}
+            </a>
+          ))}
+        </div>
+      </div>
+    ))}
+  </nav>
+
+  <div class="right">
+    <a href="/contact" class="btn ghost">Contact</a>
+  </div>
+
+  <button class="menu-btn" aria-label="Menu openen" aria-expanded="false" aria-controls="mnav">
+    <span></span><span></span><span></span>
+  </button>
+</div></div></div>
+
+<script>
+  // Dropdowns: hover/focus openen ze via CSS; klik en toetsenbord via JS.
+  const items = Array.from(document.querySelectorAll<HTMLElement>('.topnav .ni'));
+
+  const closeAll = (except?: HTMLElement) => {
+    for (const ni of items) {
+      if (ni === except) continue;
+      delete ni.dataset.open;
+      ni.querySelector('[data-dd]')?.setAttribute('aria-expanded', 'false');
+    }
+  };
+
+  for (const ni of items) {
+    const btn = ni.querySelector<HTMLButtonElement>('[data-dd]');
+    if (!btn) continue;
+
+    btn.addEventListener('click', () => {
+      const open = ni.dataset.open === 'true';
+      closeAll(ni);
+      if (open) {
+        delete ni.dataset.open;
+        btn.setAttribute('aria-expanded', 'false');
+      } else {
+        ni.dataset.open = 'true';
+        btn.setAttribute('aria-expanded', 'true');
+      }
+    });
+
+    // Toetsenbord: openen bij focus, sluiten als de focus de groep verlaat.
+    ni.addEventListener('focusin', () => {
+      closeAll(ni);
+      ni.dataset.open = 'true';
+      btn.setAttribute('aria-expanded', 'true');
+    });
+    ni.addEventListener('focusout', (e) => {
+      if (!ni.contains(e.relatedTarget as Node)) {
+        delete ni.dataset.open;
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  document.addEventListener('click', (e) => {
+    if (!(e.target as HTMLElement).closest('.topnav .ni')) closeAll();
+  });
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeAll();
+  });
+</script>

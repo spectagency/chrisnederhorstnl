@@ -1,0 +1,51 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Badge from '../ui/Badge.astro';
+import Button from '../ui/Button.astro';
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  text: string;
+  primaryLabel: string;
+  primaryHref: string;
+  secondaryLabel: string;
+  secondaryHref: string;
+  /**
+   * Beeld in de rechterkolom. Het vlak is hoger dan breed-op-hoogte van de
+   * meeste bronbeelden, dus het beeld wordt met object-fit: cover bijgesneden —
+   * zie .hero .pic img in global.css.
+   */
+  image?: ImageMetadata;
+  /** Alt-tekst bij `image`. Verplicht zodra er een beeld is. */
+  imageAlt?: string;
+  /** Tekst in het plaatshouderchipje zolang er geen `image` is. */
+  imageLabel?: string;
+}
+const props = Astro.props;
+---
+<div class="shell"><section class="hero"><div class="hero-inner">
+  <div class="copy">
+    <Badge variant="eyebrow">{props.eyebrow}</Badge>
+    <h1>{props.title}</h1>
+    <p>{props.text}</p>
+    <div class="cta-row">
+      <Button href={props.primaryHref} variant="solid" hero>{props.primaryLabel} →</Button>
+      <Button href={props.secondaryHref} variant="ghost" hero>{props.secondaryLabel}</Button>
+    </div>
+  </div>
+  {props.image ? (
+    <div class="pic has-img">
+      {/*
+        width 2100: het vlak is fysiek ~1166 px breed op een scherm met hoge
+        resolutie en cover schaalt op hoogte, dus meer bronbreedte dan dit wordt
+        toch weggesneden. Zonder deze grens levert Astro de volle 2800 px uit —
+        pure ballast op het eerste beeld dat de bezoeker laadt.
+      */}
+      <Image src={props.image} alt={props.imageAlt ?? ''} width={2100} loading="eager" />
+    </div>
+  ) : (
+    <div class="pic"><span class="lbl">{props.imageLabel}</span></div>
+  )}
+</div></section></div>

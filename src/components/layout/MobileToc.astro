@@ -1,0 +1,113 @@
+---
+// Herbruikbare mobiele inhoudsopgave.
+// Toont op mobiel (≤920px) een kleine zwevende knop onderaan de pagina; klikken
+// opent een bottom-sheet met een sprong-lijst. Volledig data-gedreven, dus ook
+// bruikbaar op artikelen (met de H2-koppen als items).
+//
+// Vereist per item een element met een matchend `id` op de pagina, en bij
+// voorkeur `scroll-margin-top` op dat element zodat de kop niet onder de
+// sticky topbar verdwijnt.
+export interface TocItem {
+  id: string;
+  label: string;
+  count?: number;
+}
+interface Props {
+  items: TocItem[];
+  /** Kop bovenin de sheet. */
+  title?: string;
+  /** Tekst op de zwevende knop. */
+  label?: string;
+}
+const { items, title = 'Inhoudsopgave', label = 'Inhoudsopgave' } = Astro.props;
+---
+{items.length > 0 && (
+  <div class="mtoc" data-mtoc>
+    <button
+      type="button"
+      class="mtoc-btn"
+      aria-haspopup="dialog"
+      aria-expanded="false"
+      aria-controls="mtoc-sheet"
+    >
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+        <path d="M4 6h11M4 12h11M4 18h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        <circle cx="19.5" cy="6" r="1.4" fill="currentColor" />
+        <circle cx="19.5" cy="12" r="1.4" fill="currentColor" />
+      </svg>
+      <span>{label}</span>
+    </button>
+
+    <div class="mtoc-overlay" data-mtoc-close></div>
+
+    <div class="mtoc-sheet" id="mtoc-sheet" role="dialog" aria-modal="true" aria-label={title}>
+      <div class="mtoc-head">
+        <span class="mtoc-title">{title}</span>
+        <button type="button" class="mtoc-close" data-mtoc-close aria-label="Sluiten">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </button>
+      </div>
+      <nav class="mtoc-nav">
+        {items.map((it) => (
+          <a href={`#${it.id}`} data-mtoc-link={it.id}>
+            <span class="mtoc-lbl">{it.label}</span>
+            {it.count != null && <span class="mtoc-cnt">{it.count}</span>}
+          </a>
+        ))}
+      </nav>
+    </div>
+  </div>
+)}
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-mtoc]');
+  if (root) {
+    const btn = root.querySelector<HTMLButtonElement>('.mtoc-btn');
+    const links = Array.from(root.querySelectorAll<HTMLAnchorElement>('[data-mtoc-link]'));
+
+    const open = () => {
+      // Compenseer de wegvallende scrollbar zodat de content niet verspringt
+      // bij het locken van de body (0 bij overlay-scrollbars op mobiel).
+      const sbw = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.paddingRight = sbw > 0 ? `${sbw}px` : '';
+      root.dataset.open = 'true';
+      btn?.setAttribute('aria-expanded', 'true');
+      document.body.classList.add('mtoc-lock');
+    };
+    const close = () => {
+      delete root.dataset.open;
+      btn?.setAttribute('aria-expanded', 'false');
+      document.body.classList.remove('mtoc-lock');
+      document.body.style.paddingRight = '';
+    };
+
+    btn?.addEventListener('click', () => (root.dataset.open ? close() : open()));
+    root.querySelectorAll('[data-mtoc-close]').forEach((el) => el.addEventListener('click', close));
+    links.forEach((l) => l.addEventListener('click', close));
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') close();
+    });
+
+    // Scrollspy: markeer het item van de sectie die in beeld is.
+    const byId = new Map(links.map((a) => [a.dataset.mtocLink, a]));
+    const targets = links
+      .map((a) => document.getElementById(a.dataset.mtocLink ?? ''))
+      .filter((el): el is HTMLElement => el !== null);
+    if (targets.length) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) {
+              links.forEach((l) => l.classList.remove('active'));
+              byId.get(e.target.id)?.classList.add('active');
+            }
+          }
+        },
+        { rootMargin: '-30% 0px -60% 0px', threshold: 0 },
+      );
+      targets.forEach((t) => observer.observe(t));
+    }
+  }
+</script>

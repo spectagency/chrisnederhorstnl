@@ -1,0 +1,13 @@
+---
+// Merkteken: het ronde portret van Chris, zoals in de zijbalk van de live site.
+// De rondsnede en de maat zitten in .mark in global.css.
+import { Image } from 'astro:assets';
+import portret from '../../assets/brand/chris-nederhorst.jpg';
+interface Props {
+  class?: string;
+}
+const { class: className = 'mark' } = Astro.props;
+---
+<span class={className}>
+  <Image src={portret} alt="" width={80} height={80} />
+</span>

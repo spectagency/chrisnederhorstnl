@@ -1,0 +1,38 @@
+---
+/**
+ * Plausible Analytics.
+ *
+ * Geen cookies, geen persoonsgegevens: Plausible telt bezoeken zonder de
+ * bezoeker te herkennen. Daarom is voor deze meting geen toestemming nodig
+ * onder de AVG en de Telecommunicatiewet, en dus ook geen cookiebanner.
+ *
+ * TODO: chrisnederhorst.nl aanmaken in Plausible en de script-URL uit het
+ * dashboard (Site Settings → Installation) hieronder invullen. Zolang
+ * `PLAUSIBLE_SRC` leeg is, rendert deze component niets. Neem níet de URL van
+ * koudschuim.info over: dan belandt dit verkeer in de cijfers van die site.
+ *
+ * De `plausible()`-stub in het tweede script vangt events op die worden
+ * afgevuurd voordat het async hoofdscript binnen is; `plausible.init()` start
+ * de meting van de paginaweergave.
+ */
+const PLAUSIBLE_SRC = '';
+
+// Alleen meten op de productiedeploy. Vercel zet `VERCEL_ENV` op 'preview' voor
+// elke staging-build; zonder deze controle zou het verkeer op *.vercel.app in de
+// cijfers belanden. Buiten Vercel (`npm run dev`, een lokale build) is de
+// variabele leeg en rendert deze component niets.
+const enabled = PLAUSIBLE_SRC !== '' && process.env.VERCEL_ENV === 'production';
+---
+{enabled && (
+  <Fragment>
+    <script is:inline async src={PLAUSIBLE_SRC}></script>
+    {/*
+      Geen woord commentaar in het script zelf: dit blok gaat mee in de HTML van
+      elke pagina. De uitleg hoort in de frontmatter hierboven.
+    */}
+    <script is:inline>
+      window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+      plausible.init()
+    </script>
+  </Fragment>
+)}

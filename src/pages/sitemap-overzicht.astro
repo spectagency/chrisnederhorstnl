@@ -1,0 +1,52 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/layout/Breadcrumbs.astro';
+import { getNavGroups } from '../data/navigation';
+import { SITE } from '../data/site';
+import type { Crumb } from '../components/layout/Breadcrumbs.astro';
+
+const NAV_GROUPS = await getNavGroups();
+
+const title = 'Sitemap';
+const description = `Overzicht van alle pagina’s op ${SITE.domain}.`;
+
+const utility = [
+  { label: 'Contact', href: '/contact' },
+  { label: 'Disclaimer', href: '/disclaimer' },
+  { label: 'Sitemap', href: '/sitemap-overzicht' },
+];
+
+const crumbs: Crumb[] = [{ label: 'Home', href: '/' }, { label: title }];
+---
+<BaseLayout title={title} description={description} breadcrumbs={crumbs} page={{ '@type': 'CollectionPage' }}>
+  <Fragment slot="hero">
+    <div class="shell"><div class="pagehead">
+      <Breadcrumbs items={crumbs} />
+      <h1>Sitemap</h1>
+      <p class="lead">{description}</p>
+    </div></div>
+  </Fragment>
+
+  <div class="content single">
+    <div class="main">
+      {NAV_GROUPS.map((group) => (
+        <div class="block">
+          <span class="blabel">{group.title}</span>
+          <ul class="prose">
+            {group.items.map((item) => (
+              <li><a href={item.href}>{item.label}</a></li>
+            ))}
+          </ul>
+        </div>
+      ))}
+      <div class="block">
+        <span class="blabel">Overig</span>
+        <ul class="prose">
+          {utility.map((item) => (
+            <li><a href={item.href}>{item.label}</a></li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

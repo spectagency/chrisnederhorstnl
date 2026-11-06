@@ -1,0 +1,22 @@
+---
+export interface Step {
+  title: string;
+  text: string;
+}
+interface Props {
+  steps: Step[];
+}
+const { steps } = Astro.props;
+const pad = (n: number) => String(n).padStart(2, '0');
+---
+<div class="steps">
+  {steps.map((step, i) => (
+    <div class="step">
+      <div class="num">{pad(i + 1)}</div>
+      <div>
+        <h3>{step.title}</h3>
+        <p set:html={step.text} />
+      </div>
+    </div>
+  ))}
+</div>

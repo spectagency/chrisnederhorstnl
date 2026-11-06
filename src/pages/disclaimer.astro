@@ -1,0 +1,30 @@
+---
+// TODO: definitieve disclaimertekst.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/layout/Breadcrumbs.astro';
+import { SITE } from '../data/site';
+import type { Crumb } from '../components/layout/Breadcrumbs.astro';
+
+const title = 'Disclaimer';
+const description = `Disclaimer en voorwaarden voor het gebruik van de informatie op ${SITE.domain}.`;
+
+const crumbs: Crumb[] = [{ label: 'Home', href: '/' }, { label: title }];
+---
+<BaseLayout title={title} description={description} breadcrumbs={crumbs}>
+  <Fragment slot="hero">
+    <div class="shell"><div class="pagehead">
+      <Breadcrumbs items={crumbs} />
+      <h1>{title}</h1>
+      <p class="lead">{description}</p>
+    </div></div>
+  </Fragment>
+
+  <div class="content single">
+    <div class="main">
+      <div class="prose">
+        <p>De informatie op {SITE.domain} is met de grootst mogelijke zorg samengesteld. Aan de inhoud kunnen geen rechten worden ontleend.</p>
+        <p>Heeft u een vraag of klopt er iets niet? <a href="/contact">Neem gerust contact op</a>.</p>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

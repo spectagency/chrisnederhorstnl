@@ -1,0 +1,66 @@
+---
+// Mobiele navigatielade. Op smalle schermen valt de topnav met dropdowns weg;
+// deze lade (geopend via de hamburgerknop) spiegelt diezelfde navigatie: elke groep
+// is een uitklapbare rij (accordion) met dezelfde titel + contextregel als de
+// desktop-dropdown. Data-gedreven uit de navigatie, los van de contextuele
+// linkerkolom (.side) zodat elke pagina hetzelfde menu heeft.
+import { getNavGroups, findNavLocation } from '../../data/navigation';
+import Mark from './Mark.astro';
+
+const current = Astro.url.pathname.replace(/\/$/, '') || '/';
+const NAV_GROUPS = await getNavGroups();
+const loc = await findNavLocation(current);
+const activeGroup = loc?.group.title;
+const isActive = (href: string) => loc?.item.href === href;
+---
+<aside class="mnav" id="mnav" aria-label="Menu">
+  <a href="/" class="brand mnav-brand">
+    <Mark />
+    <span class="word">Chris Nederhorst</span>
+  </a>
+
+  <div class="macc">
+    {NAV_GROUPS.map((group) => {
+      const open = activeGroup === group.title;
+      return (
+        <div class={`macc-item${open ? ' open' : ''}`}>
+          <button type="button" class="macc-trigger" aria-expanded={open ? 'true' : 'false'} data-macc>
+            {group.title}
+            <svg class="caret" viewBox="0 0 20 20" width="15" height="15" aria-hidden="true">
+              <path d="M6 8l4 4 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+          <div class="macc-panel">
+            <div class="macc-panel-inner">
+              {group.items.map((item) => (
+                <a href={item.href} class={isActive(item.href) ? 'active' : undefined} aria-current={isActive(item.href) ? 'page' : undefined}>
+                  <span class="ddt">{item.label}</span>
+                  {item.sub && <span class="dds">{item.sub}</span>}
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    })}
+
+  </div>
+
+  <div class="help">
+    <h5>Contact</h5>
+    <p>Een vraag of een reactie? Neem gerust contact op.</p>
+    <a href="/contact" class="cta">Naar contact →</a>
+  </div>
+</aside>
+
+<script>
+  // Accordion: elke groepsrij klapt onafhankelijk open/dicht, zoals de desktop-dropdowns.
+  document.querySelectorAll<HTMLButtonElement>('.mnav [data-macc]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.macc-item');
+      if (!item) return;
+      const open = item.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  });
+</script>

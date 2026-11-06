@@ -1,0 +1,747 @@
+/* ============================================================================
+   chrisnederhorst.nl — de complete stylesheet van de site.
+
+   Overgenomen van koudschuim.info; blok 1 is aangepast aan de huisstijl van
+   de oude chrisnederhorst.nl (blauw accent, donker vlak, Source Sans).
+
+   Alles wat de site er zo uit laat zien staat in dit ene bestand: tokens,
+   componenten, paginaspecifieke uitzonderingen en het responsieve gedrag.
+   Er staat bewust géén CSS in `<style>`-blokken van componenten of pagina's,
+   en tailwind.config.mjs bevat geen eigen waarden meer — die leest de tokens
+   hieronder. Zo is er één plek om te lezen en één plek om te wijzigen.
+
+   → Deze look hergebruiken voor een andere site? Zie project-docs/HERGEBRUIK.md.
+     Kort: kopieer dit bestand en pas alleen blok 1 aan.
+
+   Inhoud
+     1.  Merk & tokens          ← de enige plek met sitespecifieke waarden
+     2.  Basis (reset, body)
+     3.  Raamwerk (shell, wrap, onecol)
+     4.  Topbar & desktopnavigatie
+     5.  Mobiele navigatielade
+     6.  Contextuele linkerkolom (.side)
+     7.  Mobiele inhoudsopgave (.mtoc)
+     8.  Hero
+     9.  Paginakop & artikelcontent
+     10. Prose (markdown-body)
+     11. Homepageblokken
+     12. Voettekst
+     13. Paginaspecifiek (/404)
+     14. Responsief
+
+   Breekpunten. Media queries kunnen geen custom property lezen, dus deze vier
+   getallen staan als losse waarden in blok 14 en nergens anders:
+     1200px  topnav snoert in
+     1000px  topnav → hamburger + lade
+      920px  linkerkolom weg, alles één kolom
+      520px  fijnafstelling kleine telefoons
+   ============================================================================ */
+
+/* ============================================================================
+   1. MERK & TOKENS
+   Alles wat per site verschilt staat hieronder. De rest van dit bestand
+   verwijst er uitsluitend naar en bevat zelf geen kleuren of lettertypen.
+   ============================================================================ */
+
+/* Lettertypen. Hoort bij --disp en --sans verderop: wijzig ze samen. */
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* --- lettertypen ------------------------------------------------------ */
+  --disp: "Source Sans 3", system-ui, sans-serif;  /* koppen, cijfers, wordmark */
+  --sans: "Source Sans 3", system-ui, sans-serif;  /* lopende tekst en UI */
+
+  /* --- vlakken en tekst ------------------------------------------------- */
+  --bg: #f6f5f3;          /* pagina-achtergrond (warm gebroken wit) */
+  --card: #ffffff;        /* kaarten, panelen, hover-vlakken */
+  --ink: #211f25;         /* primaire tekst */
+  --ink-soft: #5a5660;    /* lopende en secundaire tekst */
+  --ink-faint: #928d99;   /* meta, labels, tellers */
+  --line: #e7e4ea;        /* randen */
+  --line-soft: #f0eef3;   /* haarlijnen binnen een blok */
+
+  /* --- accent ----------------------------------------------------------- */
+  /* Blauw van de oude chrisnederhorst.nl (#4077AF, licht #75A0CC). */
+  --accent: #4077af;
+  --accent-deep: #2f5c8a; /* hover en donkere variant */
+  --accent-soft: #ebf1f8; /* accentvlak */
+  --accent-line: #d2e0ef; /* accentrand */
+  --on-accent: #ffffff;   /* tekst op een accentvlak */
+
+  /* --- signaalkleuren (gereserveerd) ------------------------------------ */
+  --mint: #2f7d63;
+  --amber: #9a6a22;
+  --amber-soft: #f6efe1;
+
+  /* --- merkonderdelen --------------------------------------------------- */
+  /* Voettekst — eigen palet, want die staat op een donker vlak. */
+  /* Donker vlak van de zijbalk op de oude chrisnederhorst.nl. */
+  --footer-bg: linear-gradient(180deg, #25232a, #1a1a1d);
+  --footer-ink: #dedde2;         /* links en lopende tekst */
+  --footer-ink-strong: #ffffff;  /* wordmark en link-hover */
+  --footer-ink-soft: #b4b2bb;    /* omschrijving onder de wordmark */
+  --footer-label: #8f97a8;       /* kolomkopjes en onderregel */
+  --footer-line: rgba(255,255,255,.13); /* scheidingslijn boven de onderregel */
+
+  /* Letterbox achter een video-embed. */
+  --video-bg: #000000;
+
+  /* Beeldplaatshouder: gestreept vlak met monospace-labelchip. Nog in gebruik
+     voor een <Hero> zonder `image`; de auteursavatar en de homepage-hero hebben
+     inmiddels echte fotografie. */
+  --placeholder-a: #efe7d8;
+  --placeholder-b: #e8dfcd;
+  --placeholder-ink: #8b7e64;
+  --placeholder-line: rgba(139,126,100,.22);
+  --placeholder-chip: rgba(255,255,255,.85); /* labelchip op het gestreepte vlak */
+
+  /* --- overlays en schaduwen -------------------------------------------- */
+  --topbar-bg: rgba(246,245,243,.88);   /* --bg met doorkijk, achter de blur */
+  --scrim: rgba(20,16,22,.42);          /* verduistering achter lade en sheet */
+  --shadow-dd: 0 18px 44px rgba(20,16,22,.14);      /* dropdownpaneel */
+  --shadow-drawer: 0 24px 60px rgba(0,0,0,.22);     /* geopende navigatielade */
+  --shadow-sheet: 0 -18px 50px rgba(20,16,22,.22);  /* bottom sheet */
+  --shadow-float: 0 8px 24px rgba(20,16,22,.16);    /* zwevende knop */
+
+  /* --- maatvoering ------------------------------------------------------ */
+  --shell: 1280px;        /* buitenste container */
+  --wrap: 1068px;         /* tweekoloms leesgebied (kolom links + content) */
+  --reading: 780px;       /* leeskolom */
+  --aside: 248px;         /* contextuele linkerkolom */
+  --topbar: 64px;         /* hoogte van de bovenbalk; sticky-offsets rekenen hiermee */
+  --gutter: 26px;         /* zijmarge van .shell */
+  --gutter-sm: 18px;      /* idem onder 920px */
+
+  /* --- rondingen -------------------------------------------------------- */
+  --r: 14px;              /* standaard kaart of paneel */
+  --r-lg: 16px;           /* groot blok, beeldkader */
+  --r-hero: 22px;         /* herokaart */
+}
+
+/* ============================================================================
+   2. BASIS
+   ============================================================================ */
+
+@layer base {
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  /* Scrolllock terwijl de mobiele inhoudsopgave open is (zie blok 7). */
+  body.mtoc-lock { overflow: hidden; }
+}
+
+@layer components {
+  /* ==========================================================================
+     3. RAAMWERK
+     ========================================================================== */
+
+  .shell { max-width: var(--shell); margin: 0 auto; padding: 0 var(--gutter); }
+
+  /* Tweekoloms (aside-slot + content), gebruikt door artikelen met inhoudsopgave. */
+  .wrap { display: grid; grid-template-columns: var(--aside) minmax(0, 1fr); gap: 40px;
+    max-width: var(--wrap); margin-inline: auto; padding: 34px 0 72px; align-items: start; }
+  .content { min-width: 0; }
+  /* Enkelkoloms (geen linkerkolom): zelfde leesbreedte als de contentkolom hierboven. */
+  .onecol { max-width: var(--reading); margin-inline: auto; padding: 34px 0 72px; }
+  /* De pagehero op enkelkoloms-pagina's uitlijnen op diezelfde leeskolom. */
+  .lay-full .pagehead { max-width: var(--reading); margin-inline: auto; }
+  /* Op tweekoloms-pagina's uitlijnen op de wrap, zodat de kop dezelfde randen
+     krijgt als de inhoudsopgave links en de contentkolom rechts. */
+  .lay-aside .pagehead { max-width: var(--wrap); margin-inline: auto; }
+
+  /* ==========================================================================
+     4. TOPBAR & DESKTOPNAVIGATIE
+     ========================================================================== */
+
+  .topbar { position: sticky; top: 0; z-index: 50; background: var(--topbar-bg);
+    backdrop-filter: saturate(140%) blur(12px); border-bottom: 1px solid var(--line); }
+  .nav { display: flex; align-items: center; gap: 20px; height: var(--topbar); }
+  .brand { display: flex; align-items: center; gap: 12px; flex: none; }
+  /* Merkteken: rond portret (Mark.astro). */
+  .mark { width: 40px; height: 40px; flex: none; border-radius: 50%; overflow: hidden;
+    display: block; background: var(--line); }
+  .mark img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .brand .word { font-family: var(--disp); font-weight: 800; font-size: 20px; letter-spacing: -.02em; line-height: 1; }
+  .nav .right { display: flex; align-items: center; gap: 10px; flex: none; }
+
+  /* Knoppen: pil, 40px. De hero gebruikt .cta (48px) met dezelfde varianten. */
+  .btn { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 18px;
+    border-radius: 999px; font-weight: 600; font-size: 14px; border: 1px solid transparent;
+    cursor: pointer; white-space: nowrap; }
+  .btn.solid { background: var(--accent); color: var(--on-accent); }
+  .btn.solid:hover { background: var(--accent-deep); }
+  .btn.ghost { background: var(--card); color: var(--ink); border: 1px solid var(--line); }
+  .btn.ghost:hover { border-color: var(--accent-line); color: var(--accent); }
+
+  /* --- dropdowns in de topnav ---
+     De ruimte voor de topnav is constant: de shell stopt bij --shell, dus een
+     breder scherm levert geen extra plek op. Wat hier bij die breedte niet past,
+     past nergens — vandaar dat de maatvoering krap is afgesteld en niet achter
+     een media query zit. */
+  .topnav { margin-left: auto; display: flex; align-items: center; gap: 1px; min-width: 0; }
+  .ni { position: relative; display: inline-flex; }
+  .nl { display: inline-flex; align-items: center; gap: 5px; height: 38px; padding: 0 10px; border-radius: 9px;
+    background: transparent; border: 0; cursor: pointer; color: var(--ink-soft); font-family: var(--sans);
+    font-size: 14.5px; font-weight: 600; line-height: 1; white-space: nowrap; }
+  .nl:hover { background: var(--card); color: var(--ink); }
+  .nl.current { color: var(--accent); }
+  .nl .caret { opacity: .5; transition: transform .18s ease; flex: none; }
+  .ni:hover .caret, .ni[data-open] .caret { transform: rotate(180deg); }
+
+  /* Paneel: standaard verborgen, open bij hover/focus (CSS) of klik (data-open via JS).
+     --dd-item is de breedte van één menu-item; het paneel is dat plus de padding.
+     De tweekoloms-variant hieronder rekent ermee, zodat de items in beide
+     varianten exact even breed zijn. */
+  .dd { --dd-item: 286px; position: absolute; top: calc(100% + 8px); left: 0;
+    width: calc(var(--dd-item) + 14px); z-index: 60;
+    display: flex; flex-direction: column; gap: 1px; padding: 7px;
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--r);
+    box-shadow: var(--shadow-dd);
+    opacity: 0; visibility: hidden; transform: translateY(-6px); pointer-events: none;
+    transition: opacity .16s ease, transform .16s ease, visibility .16s; }
+  /* Lange groepen (7+ items) worden tweekoloms: één kolom zou een sliert worden
+     die tot onder de vouw doorloopt. De items houden hun breedte, dus het paneel
+     wordt twee keer zo breed: 2 × item + 1px kolomnaad + 2 × 7px padding.
+     Bewust CSS-kolommen en geen grid: in een grid delen twee items dezelfde
+     rijhoogte, dus een item dat over twee regels wikkelt duwt zijn buurman een
+     gat onder zich. Kolommen stapelen onafhankelijk en vullen van boven naar
+     beneden, zodat de leesvolgorde gelijk blijft aan de enkelkoloms-variant. */
+  .dd.cols2 { display: block; width: calc(var(--dd-item) * 2 + 15px);
+    column-count: 2; column-gap: 1px; }
+  /* In kolomlayout werkt `gap` niet; de naad tussen items komt van de marge.
+     break-inside houdt een item heel, anders splitst het over de kolomgrens. */
+  .dd.cols2 a { break-inside: avoid; margin-bottom: 1px; }
+
+  /* Rechts uitlijnen: laatste groep loopt anders buiten het scherm. */
+  .topnav .ni:last-of-type .dd { left: auto; right: 0; }
+  /* Onzichtbare brug over de tussenruimte zodat de muis van knop naar paneel kan zonder te sluiten. */
+  .dd::before { content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 10px; }
+  .ni:hover .dd, .ni[data-open] .dd { opacity: 1; visibility: visible; transform: none; pointer-events: auto; }
+  .dd a { display: flex; flex-direction: column; gap: 2px; padding: 9px 11px; border-radius: 8px; }
+  .dd a:hover { background: var(--bg); }
+  .dd .ddt { color: var(--ink); font-size: 14px; font-weight: 600; line-height: 1.25; }
+  .dd a:hover .ddt { color: var(--accent-deep); }
+  .dd a.active .ddt { color: var(--accent); }
+  .dd .dds { color: var(--ink-faint); font-size: 12.5px; font-weight: 400; line-height: 1.3; }
+  .dd a.active .dds { color: var(--accent); opacity: .75; }
+
+  /* Hamburger: verborgen op desktop, verschijnt in blok 14. */
+  .menu-btn { display: none; width: 42px; height: 42px; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--card); cursor: pointer; flex-direction: column; align-items: center;
+    justify-content: center; gap: 4px; padding: 0; flex: none; }
+  .menu-btn span { display: block; width: 18px; height: 2px; background: var(--ink); border-radius: 2px; }
+  .nav-overlay { display: none; }
+
+  /* ==========================================================================
+     5. MOBIELE NAVIGATIELADE
+     Accordion die de desktop-dropdowns spiegelt. De lade zelf (.mnav) is op
+     desktop verborgen en wordt in blok 14 opgebouwd.
+     ========================================================================== */
+
+  .mnav { display: none; }
+  .macc { margin-bottom: 16px; }
+  .macc-item { border-bottom: 1px solid var(--line-soft); }
+  .macc-item:first-child { border-top: 1px solid var(--line-soft); }
+  /* Groepsrij = trigger, in dezelfde stijl als een topnav-link. */
+  .macc-trigger { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;
+    padding: 13px 6px; background: transparent; border: 0; cursor: pointer; text-align: left;
+    font-family: var(--sans); font-size: 15.5px; font-weight: 700; color: var(--ink); line-height: 1.2; }
+  .macc-trigger .caret { opacity: .5; flex: none; transition: transform .2s ease; }
+  .macc-item.open .macc-trigger .caret { transform: rotate(180deg); }
+  .macc-trigger.current { color: var(--accent); }
+  /* Uitklappaneel met dezelfde titel + contextregel als de desktop-dropdown.
+     Vloeiend open-/dichtklappen via het grid-rows-trucje (0fr → 1fr). */
+  .macc-panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s cubic-bezier(.22,.61,.36,1); }
+  .macc-item.open .macc-panel { grid-template-rows: 1fr; }
+  .macc-panel-inner { overflow: hidden; min-height: 0; display: flex; flex-direction: column; gap: 1px; padding: 0 4px 10px; }
+  .macc-panel a { display: flex; flex-direction: column; gap: 2px; padding: 9px 11px; border-radius: 9px; }
+  .macc-panel a:hover { background: var(--card); }
+  .macc-panel a.active { background: var(--accent-soft); }
+  .macc-panel .ddt { color: var(--ink); font-size: 14.5px; font-weight: 600; line-height: 1.25; }
+  .macc-panel a.active .ddt { color: var(--accent); }
+  .macc-panel .dds { color: var(--ink-faint); font-size: 12.5px; font-weight: 400; line-height: 1.3; }
+  .macc-panel a.active .dds { color: var(--accent); opacity: .75; }
+
+  /* ==========================================================================
+     6. CONTEXTUELE LINKERKOLOM (.side)
+     Inhoudsopgave op artikelen.
+     ========================================================================== */
+
+  .side { position: sticky; top: calc(var(--topbar) + 16px); }
+  .side .group { margin-bottom: 22px; }
+  .side .group h4 { font-size: 11px; letter-spacing: .13em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 800; margin: 0 0 8px 13px; }
+  .side nav { display: flex; flex-direction: column; gap: 1px; }
+  .side nav a { display: flex; align-items: center; gap: 11px; padding: 8px 13px; border-radius: 9px;
+    color: var(--ink-soft); font-size: 14px; font-weight: 500; line-height: 1.3; }
+  .side nav a:hover { background: var(--card); color: var(--ink); }
+  .side nav a.active { background: var(--accent); color: var(--on-accent); font-weight: 700; }
+  .side nav a .lead { width: 5px; height: 5px; border-radius: 50%; background: var(--accent-line); flex: none; }
+  .side nav a:hover .lead { background: var(--accent); }
+  .side nav a.active .lead { background: var(--on-accent); }
+
+  /* Contact-kaartje onderaan .side (inhoudsopgave/categorieën) én de mobiele lade. */
+  .side .help, .mnav .help { margin-top: 8px; background: var(--accent-soft);
+    border: 1px solid var(--accent-line); border-radius: var(--r); padding: 18px; }
+  .side .help h5, .mnav .help h5 { font-family: var(--disp); font-size: 16px; font-weight: 700;
+    margin-bottom: 6px; color: var(--accent-deep); }
+  .side .help p, .mnav .help p { font-size: 13px; color: var(--ink-soft); margin-bottom: 12px; line-height: 1.5; }
+  .side .help a.cta, .mnav .help a.cta { display: inline-flex; align-items: center; gap: 6px;
+    font-weight: 700; font-size: 13.5px; color: var(--accent); }
+
+  /* Inhoudsopgave-koppen kunnen lang zijn: laat ze netjes afbreken i.p.v. de kolom oprekken. */
+  .side.toc nav a { align-items: flex-start; overflow-wrap: anywhere; }
+  .side.toc nav a .lead { margin-top: 6px; }
+
+  /* ==========================================================================
+     7. MOBIELE INHOUDSOPGAVE (.mtoc)
+     Zwevende knop + bottom sheet, alleen onder 920px. Houdt zijn eigen media
+     query omdat het component van kop tot staart mobiel-only is.
+     ========================================================================== */
+
+  .mtoc { display: none; }
+
+  @media (max-width: 920px) {
+    .mtoc { display: block; }
+
+    /* Zwevende knop, gecentreerd onderaan (respecteert de safe-area op iOS). */
+    .mtoc-btn { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+      transform: translateX(-50%); z-index: 90;
+      display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px;
+      border: 1px solid var(--line); border-radius: 999px; background: var(--card); color: var(--ink);
+      font-family: var(--sans); font-size: 14px; font-weight: 700; line-height: 1; cursor: pointer;
+      box-shadow: var(--shadow-float);
+      transition: opacity .2s ease, transform .2s ease; }
+    .mtoc-btn svg { color: var(--accent); flex: none; }
+    /* Knop wijkt terug zodra de sheet open is. */
+    .mtoc[data-open] .mtoc-btn { opacity: 0; pointer-events: none; transform: translateX(-50%) translateY(8px); }
+
+    .mtoc-overlay { position: fixed; inset: 0; z-index: 100; background: var(--scrim);
+      opacity: 0; visibility: hidden; transition: opacity .25s ease, visibility .25s ease; }
+    .mtoc[data-open] .mtoc-overlay { opacity: 1; visibility: visible; }
+
+    /* Bottom sheet: schuift van onderen omhoog. */
+    .mtoc-sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 110; max-height: 72vh;
+      display: flex; flex-direction: column; background: var(--bg);
+      border-top-left-radius: 20px; border-top-right-radius: 20px; border-top: 1px solid var(--line);
+      box-shadow: var(--shadow-sheet);
+      padding: 6px 14px calc(16px + env(safe-area-inset-bottom, 0px));
+      transform: translateY(100%); transition: transform .28s ease; }
+    .mtoc[data-open] .mtoc-sheet { transform: none; }
+
+    .mtoc-head { display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 6px 10px; border-bottom: 1px solid var(--line-soft); }
+    .mtoc-title { font-family: var(--disp); font-weight: 800; font-size: 13px;
+      letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); }
+    .mtoc-close { display: inline-flex; align-items: center; justify-content: center;
+      width: 34px; height: 34px; margin-right: -6px; border: 0; border-radius: 9px;
+      background: transparent; color: var(--ink-soft); cursor: pointer; }
+    .mtoc-close:hover { background: var(--card); color: var(--ink); }
+
+    .mtoc-nav { display: flex; flex-direction: column; gap: 1px; overflow-y: auto;
+      padding: 8px 0 4px; -webkit-overflow-scrolling: touch; }
+    .mtoc-nav a { display: flex; align-items: center; gap: 12px; padding: 12px 12px; border-radius: 10px;
+      color: var(--ink-soft); font-size: 15px; font-weight: 500; line-height: 1.3; }
+    .mtoc-nav a:hover { background: var(--card); color: var(--ink); }
+    .mtoc-nav a.active { background: var(--accent); color: var(--on-accent); font-weight: 700; }
+    .mtoc-lbl { min-width: 0; }
+    .mtoc-cnt { margin-left: auto; font-size: 12px; font-weight: 700; color: var(--ink-faint); flex: none; }
+    .mtoc-nav a.active .mtoc-cnt { color: var(--on-accent); opacity: .8; }
+  }
+
+  /* ==========================================================================
+     8. HERO
+     ========================================================================== */
+
+  .hero { padding: 26px 0 2px; }
+  .hero-inner { display: grid; grid-template-columns: 1.05fr .95fr; background: var(--card);
+    border: 1px solid var(--line); border-radius: var(--r-hero); overflow: hidden; }
+  .hero .copy { padding: 48px 46px; display: flex; flex-direction: column; justify-content: center; }
+  .hero h1 { font-family: var(--disp); font-weight: 800; font-size: 41px; line-height: 1.04;
+    letter-spacing: -.025em; margin: 16px 0 14px; max-width: 15ch; }
+  .hero p { font-size: 16.5px; color: var(--ink-soft); max-width: 46ch; }
+  .hero .cta-row { display: flex; gap: 12px; margin-top: 28px; flex-wrap: wrap; }
+  .hero .cta { display: inline-flex; align-items: center; gap: 8px; height: 48px; padding: 0 24px;
+    border-radius: 999px; font-weight: 600; font-size: 15px; white-space: nowrap; }
+  .hero .cta.solid { background: var(--accent); color: var(--on-accent); }
+  .hero .cta.solid:hover { background: var(--accent-deep); }
+  .hero .cta.ghost { background: var(--card); color: var(--ink); border: 1px solid var(--line); }
+  .hero .cta.ghost:hover { border-color: var(--accent-line); color: var(--accent); }
+  /* Beeldvlak: gestreepte plaatshouder tot er echte herofotografie is. */
+  .hero .pic { position: relative; min-height: 360px;
+    background: repeating-linear-gradient(125deg, var(--placeholder-a) 0 22px, var(--placeholder-b) 22px 44px); }
+  /* Met beeld vervalt het streepjespatroon: het beeld dekt het vlak volledig. */
+  .hero .pic.has-img { background: none; }
+  /* Het vlak is hoger dan de bronbeelden uit het archief; cover snijdt links en
+     rechts bij in plaats van het beeld te vervormen. Absoluut gepositioneerd
+     omdat de hoogte van .pic uit de gridrij komt: een percentagehoogte op het
+     beeld zou dan van de rijhoogte afhangen, inset:0 niet. */
+  .hero .pic img { position: absolute; inset: 0; display: block;
+    width: 100%; height: 100%; object-fit: cover; }
+  .hero .pic .lbl { position: absolute; top: 16px; left: 16px; font-family: ui-monospace, monospace;
+    font-size: 11.5px; color: var(--placeholder-ink); background: var(--placeholder-chip);
+    padding: 6px 11px; border-radius: 7px; border: 1px solid var(--placeholder-line); }
+
+  /* ==========================================================================
+     9. PAGINAKOP & ARTIKELCONTENT
+     ========================================================================== */
+
+  .pagehead { padding: 32px 0 8px; }
+  .crumb { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--ink-faint);
+    font-weight: 600; flex-wrap: wrap; }
+  .crumb a:hover { color: var(--accent); }
+  .crumb .sep { opacity: .45; }
+  .crumb .cur { color: var(--ink); }
+  .pagehead h1 { font-family: var(--disp); font-weight: 800; font-size: 38px; line-height: 1.2;
+    letter-spacing: -.025em; margin: 14px 0 12px; max-width: 30ch; }
+  .pagehead .lead { font-size: 18px; color: var(--ink-soft); line-height: 1.55; }
+  .pagehead .meta { display: flex; gap: 16px; align-items: center; margin-top: 18px;
+    font-size: 13.5px; color: var(--ink-faint); flex-wrap: wrap; }
+  .pagehead .who { display: flex; align-items: center; gap: 9px; color: var(--ink-soft); font-weight: 600; }
+  .pagehead .who .av { width: 30px; height: 30px; border-radius: 50%; flex: none;
+    object-fit: cover; background: var(--line-soft); }
+
+  .content.single { display: flex; flex-direction: column; gap: 34px; max-width: var(--reading); }
+  .content.single .main { display: flex; flex-direction: column; gap: 34px; }
+
+  /* Label boven een blok of in de hero: streepje + uppercase accenttekst. */
+  .blabel, .eyebrow { display: inline-flex; align-items: center; gap: 9px; font-size: 11.5px;
+    letter-spacing: .13em; text-transform: uppercase; font-weight: 800; color: var(--accent); }
+  .blabel::before { content: ""; width: 20px; height: 2px; background: var(--accent); border-radius: 2px; }
+  .eyebrow::before { content: ""; width: 22px; height: 2px; background: var(--accent); border-radius: 2px; }
+
+  .lede { font-size: 19px; line-height: 1.55; color: var(--ink); font-weight: 500; }
+
+  /* Auteursregel met avatar (magazineblokken op de homepage). */
+  .byline { display: flex; align-items: flex-start; gap: 13px; margin-top: 18px; padding-top: 16px;
+    border-top: 1px solid var(--line-soft); }
+  /* Het portret is 136×150 en dus niet vierkant; cover snijdt het rond bij in
+     plaats van het uit te rekken. De maten hieronder overrulen de width/height
+     die <Image> in de HTML zet — die staan er voor het reserveren van ruimte,
+     niet als weergavemaat. */
+  .byline .av { width: 46px; height: 46px; border-radius: 50%; flex: none;
+    object-fit: cover; background: var(--line-soft); }
+  .byline .nm { font-weight: 700; font-size: 14.5px; }
+  .byline .rl { font-size: 12.5px; color: var(--ink-faint); }
+  /* De vaste auteursregel bij het portret op de homepage. Loopt door onder de
+     naam, dus .byline lijnt op flex-start uit in plaats van op het midden. */
+  .byline .bl { font-size: 13px; line-height: 1.5; color: var(--ink-soft);
+    max-width: 56ch; margin-top: 7px; }
+
+  /* Auteursverantwoording onder de tekst van elk artikel en elke FAQ (Byline.astro).
+     Bewust lopende tekst en geen kaart: de pagehead toont de auteur al.
+     Geen eigen marge — de templates zetten dit als kind van `.main`, dat met
+     `gap: 34px` de ruimte al regelt. */
+  .authorline { margin: 0; padding-top: 18px; border-top: 1px solid var(--line-soft); }
+  /* Zelfde uppercase-label als de sidebargroepen (.side .group h4): 11px met
+     ruime letterafstand, maar in ink-faint zodat het een bijschrift blijft en
+     niet met de accentlabels concurreert. */
+  .al-label { font-size: 11px; letter-spacing: .13em; text-transform: uppercase;
+    font-weight: 800; color: var(--ink-faint); margin: 0 0 7px; }
+  /* Zelfde maat en kleur als een alinea in de lopende tekst (.prose p): 16px in
+     ink-soft, en geen eigen max-width — de breedte komt van de contentkolom. */
+  .al-text { font-size: 16px; color: var(--ink-soft); margin: 0; }
+  .al-text a { color: var(--accent); font-weight: 600; }
+  .al-text a:hover { color: var(--accent-deep); }
+  .al-text strong { color: var(--ink); font-weight: 700; }
+
+  /* Accentkader binnen de tekst. */
+  .keypoint { background: var(--accent-soft); border: 1px solid var(--accent-line);
+    border-radius: var(--r); padding: 24px 20px 20px; }
+  .keypoint p { font-size: 15px; color: var(--ink-soft); margin-top: 7px; }
+
+  /* Verwante artikelen onderaan een pagina. */
+  .related { border-top: 1px solid var(--line); padding-top: 28px; }
+  .related > .blabel { margin-bottom: 4px; }
+  .related h2 { font-family: var(--disp); font-weight: 800; font-size: 23px; letter-spacing: -.015em; margin: 8px 0 6px; }
+  .rrow { display: flex; justify-content: space-between; align-items: center; gap: 16px;
+    padding: 15px 6px; border-top: 1px solid var(--line-soft); border-radius: 9px; }
+  .rrow:first-of-type { border-top: 0; }
+  .rrow:hover { background: var(--card); }
+  .rrow .t { font-weight: 700; font-size: 16px; }
+  .rrow .d { font-size: 13.5px; color: var(--ink-faint); margin-top: 1px; }
+  .rrow .chev { width: 8px; height: 8px; border-top: 2px solid var(--ink-faint);
+    border-right: 2px solid var(--ink-faint); transform: rotate(45deg); flex: none; }
+  .rrow:hover .chev { border-color: var(--accent); }
+
+  /* Afsluitende oproep onderaan een pagina. */
+  .endcta { background: var(--accent-soft); border: 1px solid var(--accent-line); border-radius: var(--r-lg);
+    padding: 24px 28px; display: flex; justify-content: space-between; align-items: center;
+    gap: 22px; flex-wrap: wrap; }
+  .endcta h3 { font-family: var(--disp); font-weight: 800; font-size: 20px; color: var(--accent-deep); }
+  .endcta p { font-size: 14.5px; color: var(--ink-soft); max-width: 50ch; margin-top: 3px; }
+
+  /* Doorleeslink. Het pijltje komt uit ::after, niet uit de linktekst — zo beweegt
+     het overal hetzelfde en staat het niet in de tekst die een screenreader voorleest. */
+  .linkmore { display: inline-flex; align-items: center; gap: 7px; color: var(--accent);
+    font-weight: 700; font-size: 14.5px; }
+  .linkmore::after { content: "\2192"; transition: transform .2s ease; }
+  .linkmore:hover::after { transform: translateX(4px); }
+  .linkmore:hover { color: var(--accent-deep); }
+
+  /* Beeld dat een ontwerpvlak volledig vult. */
+  .pf { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  /* ==========================================================================
+     10. PROSE — de markdown-body binnen artikelen
+     ========================================================================== */
+
+  .prose p { color: var(--ink-soft); font-size: 16px; }
+  .prose p + p { margin-top: 11px; }
+  .prose h2 { font-family: var(--disp); font-weight: 800; font-size: 27px; letter-spacing: -.02em;
+    margin: 24px 0 18px; scroll-margin-top: calc(var(--topbar) + 24px); }
+  .prose h2:first-child { margin-top: 0; }
+  .prose h3 { font-size: 18px; font-weight: 700; margin: 18px 0 10px;
+    scroll-margin-top: calc(var(--topbar) + 24px); }
+  /* Tailwind's preflight zet list-style op none; hier weer aan, met een accentkleurige marker. */
+  .prose ul, .prose ol { color: var(--ink-soft); font-size: 16px; padding-left: 1.35em; margin: 16px 0; }
+  .prose ul { list-style: disc; }
+  .prose ol { list-style: decimal; }
+  .prose ul ul { list-style: circle; }
+  .prose ul ul ul { list-style: square; }
+  .prose li { margin-top: 6px; padding-left: 4px; }
+  .prose li::marker { color: var(--accent); }
+  .prose ol li::marker { font-weight: 700; font-size: 14.5px; }
+  /* Geneste lijsten hangen strak onder hun ouder-item. */
+  .prose li > ul, .prose li > ol { margin: 6px 0 0; }
+  .prose a { color: var(--accent); font-weight: 600; }
+  .prose a:hover { color: var(--accent-deep); }
+  .prose strong { color: var(--ink); font-weight: 700; }
+  /* Beeld vult de volle leeskolom. De beelden uit het oude archief zijn
+     maximaal 700px breed en worden dus licht opgeschaald; dat is een bewuste
+     keuze voor een rustige, egale kolom boven maximale scherpte. Vervang je een
+     beeld door een grotere versie, dan wint die vanzelf aan scherpte. */
+  .prose img { display: block; width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); margin: 28px 0; }
+  .prose figure { margin: 28px 0; }
+  .prose figure img { margin: 0; }
+  .prose figcaption { font-size: 13px; color: var(--ink-faint); margin-top: 7px; }
+
+  /* --- tabellen ---
+     De wrapper komt uit de rehype-plugin in astro.config.mjs: hij vangt brede
+     tabellen op met eigen horizontale scroll, zodat de pagina niet meeschuift. */
+  .prose .tablewrap { margin: 22px 0; overflow-x: auto; background: var(--bg);
+    border: 1px solid var(--line); border-radius: 12px; }
+  .prose table { width: 100%; border-collapse: collapse; font-size: 15px; line-height: 1.5; }
+  .prose thead th { text-align: left; vertical-align: bottom; background: var(--accent-soft);
+    color: var(--accent-deep); font-weight: 800; font-size: 12.5px; letter-spacing: .04em;
+    text-transform: uppercase; padding: 12px 16px; border-bottom: 1px solid var(--accent-line);
+    white-space: nowrap; }
+  .prose tbody th { text-align: left; color: var(--ink); font-weight: 700; }
+  .prose td { color: var(--ink-soft); }
+  .prose tbody th, .prose td { padding: 12px 16px; vertical-align: top;
+    border-bottom: 1px solid var(--line-soft); }
+  .prose tbody tr:last-child th, .prose tbody tr:last-child td { border-bottom: 0; }
+  .prose tbody tr:hover { background: var(--card); }
+  .prose table strong { color: var(--ink); }
+  /* Markdown-uitlijning (:---: / ---:) blijft leidend over de defaults hierboven. */
+  .prose th[align="center"], .prose td[align="center"] { text-align: center; }
+  .prose th[align="right"], .prose td[align="right"] { text-align: right; }
+
+  /* ==========================================================================
+     11. HOMEPAGEBLOKKEN
+     ========================================================================== */
+
+  .block h2 { font-family: var(--disp); font-weight: 800; font-size: 27px; letter-spacing: -.02em; margin: 11px 0 18px; }
+  .block > p { color: var(--ink-soft); font-size: 16px; }
+  .block > p + p { margin-top: 11px; }
+  .block .btn.self-start { display: inline-flex; margin-top: 18px; }
+  /* Doorleeslink als sluitstuk van een blok. De ruimte erboven hangt af van wat
+     eraan voorafgaat: een alinea sluit strak af, een raster van kaarten vraagt
+     iets meer lucht. Na .certrow niets — die brengt zijn eigen ondermarge mee. */
+  .block > p + .linkmore { margin-top: 14px; }
+  .block > .guidegrid + .linkmore { margin-top: 18px; }
+  /* Kale linklijst onder een bloklabel (sitemap): dichter op het label dan de
+     16px die een lijst midden in lopende tekst krijgt. */
+  .block > .blabel + .prose { margin-top: 10px; }
+
+  /* Uitgelicht artikel met breed beeld. */
+  .feat .pic { aspect-ratio: 16/8; border-radius: var(--r-lg); border: 1px solid var(--line);
+    overflow: hidden; margin-bottom: 16px; }
+
+  /* Genummerde stappen. */
+  .steps { display: flex; flex-direction: column; margin-top: 18px; max-width: 680px; }
+  .steps .step { display: flex; gap: 16px; padding: 15px 0; border-top: 1px solid var(--line-soft); align-items: baseline; }
+  .steps .step:first-child { border-top: 0; padding-top: 2px; }
+  .steps .num { font-family: var(--disp); font-weight: 800; font-size: 22px; color: var(--accent);
+    min-width: 38px; line-height: 1; }
+  .steps .step h3 { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+  .steps .step p { font-size: 14px; color: var(--ink-soft); }
+
+  /* Video-embed. */
+  .video { position: relative; aspect-ratio: 16 / 9; margin-top: 18px; border-radius: var(--r-lg);
+    overflow: hidden; border: 1px solid var(--line); background: var(--video-bg); }
+  .video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+  /* Genummerde kaartjes in twee kolommen (op koudschuim.info: de koopgids). */
+  .guidegrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 20px; }
+  /* Elk kaartje is een link. */
+  .gcard { display: flex; gap: 14px; align-items: flex-start; padding: 16px 18px;
+    border: 1px solid var(--line); border-radius: var(--r); background: var(--card);
+    color: inherit; transition: border-color .2s ease, transform .2s ease; }
+  .gcard:hover { border-color: var(--accent-line); transform: translateY(-2px); }
+  .gcard:hover h3 { color: var(--accent-deep); }
+  .gcard .num { font-family: var(--disp); font-weight: 800; font-size: 20px; color: var(--accent);
+    min-width: 30px; line-height: 1.15; }
+  .gcard h3 { font-size: 15.5px; font-weight: 700; margin-bottom: 3px; }
+  .gcard p { font-size: 13.5px; color: var(--ink-soft); line-height: 1.45; }
+
+  /* Rij logo's (op koudschuim.info: de keurmerken). */
+  .certrow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 18px 0 16px; }
+  .certrow .logo { aspect-ratio: 1.5 / 1; display: flex; align-items: center; justify-content: center;
+    padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
+  .certrow .logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+  /* ==========================================================================
+     12. VOETTEKST
+     ========================================================================== */
+
+  footer { background: var(--footer-bg); color: var(--footer-ink); margin-top: 6px; }
+  footer .shell { padding: 46px var(--gutter) 30px; }
+  .ft { display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 30px; padding-bottom: 30px;
+    border-bottom: 1px solid var(--footer-line); }
+  .ft .word { font-family: var(--disp); font-weight: 800; font-size: 20px; color: var(--footer-ink-strong); }
+  .ft p { font-size: 14px; color: var(--footer-ink-soft); margin-top: 10px; max-width: 32ch; }
+  .ft h5 { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--footer-label);
+    font-weight: 700; margin-bottom: 12px; }
+  .ft a { display: block; font-size: 14px; color: var(--footer-ink); padding: 4px 0; }
+  .ft a:hover { color: var(--footer-ink-strong); }
+  .fb { display: flex; justify-content: space-between; align-items: center; padding-top: 20px;
+    font-size: 13px; color: var(--footer-label); flex-wrap: wrap; gap: 8px; }
+  .fb a { color: var(--footer-ink); }
+
+  /* ==========================================================================
+     13. PAGINASPECIFIEK
+     Uitzonderingen die maar op één route gelden. Staan bewust ná de generieke
+     regels hierboven, zodat ze bij gelijke specificiteit winnen.
+     ========================================================================== */
+
+  /* --- /404 ------------------------------------------------------------
+     Volledig gecentreerd, en het enige blok op de site dat dat is. Een 404
+     heeft geen leesrichting en geen vervolg in de tekst: er staat één vraag
+     ("waar wilde u heen?") en een set even zware antwoorden. Een linkslijnende
+     kolom zou suggereren dat er verder gelezen moet worden. */
+  .nf { max-width: var(--reading); margin-inline: auto; padding: 72px 0 96px; text-align: center; }
+  .nf-code { font-family: ui-monospace, monospace; font-size: 13px; font-weight: 700;
+    letter-spacing: .22em; color: var(--accent); }
+  .nf h1 { font-family: var(--disp); font-weight: 800; font-size: 40px; line-height: 1.12;
+    letter-spacing: -.025em; margin: 16px 0 14px; }
+  .nf .lead { font-size: 17.5px; color: var(--ink-soft); line-height: 1.55;
+    max-width: 46ch; margin-inline: auto; }
+
+  /* Twee kolommen op desktop, één op mobiel. auto-fit in plaats van een vaste
+     kolomtelling: bij een oneven aantal kaarten blijft de laatste netjes staan. */
+  .nf-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(228px, 1fr));
+    gap: 12px; margin-top: 40px; text-align: left; }
+  .nf-links a { display: block; background: var(--card); border: 1px solid var(--line);
+    border-radius: var(--r); padding: 16px 18px; transition: border-color .2s ease, transform .2s ease; }
+  .nf-links a:hover { border-color: var(--accent-line); transform: translateY(-2px); }
+  .nf-links .t { display: block; font-weight: 700; font-size: 15px; color: var(--ink); }
+  .nf-links .s { display: block; font-size: 13.5px; color: var(--ink-faint); margin-top: 3px; }
+
+  .nf-foot { margin-top: 34px; font-size: 14.5px; color: var(--ink-soft); }
+  .nf-foot a { color: var(--accent); font-weight: 600; }
+  .nf-foot a:hover { color: var(--accent-deep); }
+}
+
+/* ============================================================================
+   14. RESPONSIEF
+   Zie de breekpunten-tabel bovenaan dit bestand. De mobiele inhoudsopgave
+   (blok 7) houdt zijn eigen 920px-query omdat dat component volledig mobiel is.
+   ============================================================================ */
+
+/* Tussenstap vóór het omslagpunt: de topnav wordt verder ingesnoerd in plaats van
+   meteen naar de hamburger te vallen. Overbrugt het gat tussen de volle breedte
+   en 1000px, waar de zes groepen anders tegen het merk aan zouden lopen. */
+@media (max-width: 1200px) {
+  .topnav { gap: 0; }
+  .nl { padding: 0 8px; font-size: 14px; }
+  .nl .caret { margin-left: -2px; }
+  .nav { gap: 14px; }
+}
+
+/* Nav-omslagpunt: de dropdown-topnav past niet meer → hamburger + lade nemen het over.
+   Ligt hoger dan het content-omslagpunt (920px) zodat de contextuele linkerkolom
+   op tablets zichtbaar blijft terwijl de sitenavigatie al inklapt. */
+@media (max-width: 1000px) {
+  .topnav { display: none; }
+  .nav .right { display: none; }
+  .menu-btn { display: flex; margin-left: auto; }
+
+  .mnav { display: block; position: fixed; top: 0; left: 0; bottom: 0; width: 320px; max-width: 88vw;
+    background: var(--bg); z-index: 120; padding: 22px 18px 26px; overflow: auto;
+    transform: translateX(-100%); transition: transform .32s cubic-bezier(.22,.61,.36,1);
+    border-right: 1px solid var(--line); }
+  .mnav-brand { margin: 0 6px 20px; }
+  body.nav-open { overflow: hidden; }
+  body.nav-open .mnav { transform: none; box-shadow: var(--shadow-drawer); }
+
+  /* Inhoud komt gestaffeld binnen zodra de lade opent. */
+  body.nav-open .mnav-brand,
+  body.nav-open .macc-item,
+  body.nav-open .mnav .help { animation: mnavIn .34s cubic-bezier(.22,.61,.36,1) both; }
+  body.nav-open .mnav-brand { animation-delay: .04s; }
+  body.nav-open .macc-item:nth-child(1) { animation-delay: .08s; }
+  body.nav-open .macc-item:nth-child(2) { animation-delay: .12s; }
+  body.nav-open .macc-item:nth-child(3) { animation-delay: .16s; }
+  body.nav-open .macc-item:nth-child(4) { animation-delay: .20s; }
+  body.nav-open .macc-item:nth-child(5) { animation-delay: .24s; }
+  body.nav-open .mnav .help { animation-delay: .28s; }
+
+  .nav-overlay { display: block; position: fixed; inset: 0; background: var(--scrim);
+    opacity: 0; visibility: hidden; transition: .25s; z-index: 110; }
+  body.nav-open .nav-overlay { opacity: 1; visibility: visible; }
+}
+
+@keyframes mnavIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 920px) {
+  .shell { padding: 0 var(--gutter-sm); }
+  .nav { gap: 10px; }
+  .brand .word { font-size: 17px; }
+  .mark { width: 36px; height: 36px; }
+  .hero { padding: 18px 0 0; }
+  .hero-inner { grid-template-columns: 1fr; border-radius: 18px; }
+  .hero .copy { padding: 32px 24px; }
+  .hero h1 { font-size: 31px; }
+  .hero .pic { min-height: 190px; }
+  /* Contextuele linkerkolom valt weg; content wordt één kolom. <MobileToc> vervangt de inhoudsopgave. */
+  .wrap { grid-template-columns: 1fr; gap: 0; padding: 22px 0 56px; }
+  .onecol { padding: 22px 0 56px; }
+  .nf { padding: 44px 0 64px; }
+  .nf h1 { font-size: 30px; }
+  .side { display: none; }
+  .guidegrid { grid-template-columns: 1fr; }
+  .ft { grid-template-columns: 1fr 1fr; gap: 24px; }
+  .fb { flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 520px) {
+  .brand .word { font-size: 15px; }
+  .mark { width: 32px; height: 32px; }
+  .ft { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 26px; }
+  .pagehead h1 { font-size: 28px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .linkmore::after { transition: none; }
+  .linkmore:hover::after { transform: none; }
+  .gcard { transition: none; }
+  .gcard:hover { transform: none; }
+  .dd, .nl .caret, .mnav, .macc-panel { transition: none; }
+  body.nav-open .mnav-brand,
+  body.nav-open .macc-item,
+  body.nav-open .mnav .help { animation: none; }
+  .mtoc-btn, .mtoc-overlay, .mtoc-sheet { transition: none; }
+}

@@ -1,0 +1,12 @@
+---
+interface Props {
+  href: string;
+  variant?: 'solid' | 'ghost';
+  hero?: boolean; // hero-CTA (.cta, 48px) i.p.v. standaard .btn (40px)
+  class?: string;
+}
+const { href, variant = 'solid', hero = false, class: className } = Astro.props;
+const base = hero ? 'cta' : 'btn';
+const cls = [base, variant, className].filter(Boolean).join(' ');
+---
+<a href={href} class={cls}><slot /></a>

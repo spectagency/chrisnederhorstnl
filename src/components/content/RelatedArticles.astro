@@ -1,0 +1,37 @@
+---
+import { getCollection } from 'astro:content';
+import Badge from '../ui/Badge.astro';
+
+interface Props {
+  currentSlug: string;
+  related?: string[];
+}
+const { currentSlug, related = [] } = Astro.props;
+
+const all = (await getCollection('artikelen')).filter((a) => !a.data.draft && a.slug !== currentSlug);
+const bySlug = new Map(all.map((a) => [a.slug, a]));
+
+// `related` in de frontmatter bepaalt de links, in de opgegeven volgorde.
+const picked: typeof all = [];
+for (const slug of related) {
+  const a = bySlug.get(slug);
+  if (a && !picked.includes(a)) picked.push(a);
+}
+
+const items = picked.slice(0, 3);
+---
+{items.length > 0 && (
+  <section class="related">
+    <Badge variant="block">Verder lezen</Badge>
+    <h2>Gerelateerde artikelen</h2>
+    {items.map((a) => (
+      <a href={`/${a.slug}`} class="rrow">
+        <div>
+          <div class="t">{a.data.title}</div>
+          <div class="d">{a.data.description}</div>
+        </div>
+        <span class="chev"></span>
+      </a>
+    ))}
+  </section>
+)}

@@ -1,0 +1,43 @@
+---
+// Vercel serveert dit bestand automatisch bij een 404. De pagina staat bewust op
+// noindex: hij bestaat op elke niet-bestaande URL en hoort niet als zoekresultaat
+// terug te komen. `follow` blijft wel staan, zodat de links hieronder gevolgd
+// worden en een bezoeker die hier landt niet doodloopt.
+//
+// layout="bare" omdat deze pagina geen leeskolom en geen kruimelpad heeft: de
+// opmaak zit volledig in .nf (blok 13 van global.css).
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const title = 'Deze pagina bestaat niet';
+const description =
+  'De opgevraagde pagina is niet gevonden. Hieronder staat waar u wel verder kunt.';
+
+// TODO: aanvullen met de belangrijkste pagina's zodra die er zijn.
+const links = [
+  { href: '/', t: 'Home', s: 'Terug naar het begin' },
+  { href: '/sitemap-overzicht', t: 'Sitemap', s: 'Elke pagina op één rij' },
+  { href: '/contact', t: 'Contact', s: 'Een vraag of een reactie' },
+];
+---
+<BaseLayout title={title} description={description} layout="bare" noindex>
+  <div class="shell">
+    <div class="nf">
+      <p class="nf-code">404</p>
+      <h1>{title}</h1>
+      <p class="lead">De pagina die u zocht is verplaatst, hernoemd of heeft nooit bestaan.</p>
+
+      <div class="nf-links">
+        {links.map((l) => (
+          <a href={l.href}>
+            <span class="t">{l.t}</span>
+            <span class="s">{l.s}</span>
+          </a>
+        ))}
+      </div>
+
+      <p class="nf-foot">
+        Kwam u hier via een link elders? <a href="/contact">Laat het weten</a>, dan kijken we ernaar.
+      </p>
+    </div>
+  </div>
+</BaseLayout>

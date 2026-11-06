@@ -1,0 +1,52 @@
+---
+// TODO: de echte homepage. Dit is het startpunt: hero en portretblok in de
+// opmaak van koudschuim.info, met de kern van de live site als tekst.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/content/Hero.astro';
+import Avatar from '../components/content/Avatar.astro';
+import Badge from '../components/ui/Badge.astro';
+import { SITE } from '../data/site';
+import { ID, authorNode, ref, type LdNode } from '../lib/schema';
+import { LOOPBAAN } from '../data/loopbaan';
+
+// De homepage is de ankerpagina van de persoon: de WebPage-node hangt hier
+// rechtstreeks aan de Person, zodat een crawler die alleen de homepage ziet
+// meteen weet over wie deze site gaat. `mainEntity` is de uitgeschreven
+// Person: bij een ProfilePage accepteert Google geen kale `@id`-verwijzing
+// (zie authorNode in src/lib/schema.ts).
+const homePage: LdNode = {
+  '@type': 'ProfilePage',
+  name: `${SITE.author.name}, ${SITE.author.role.toLowerCase()}`,
+  mainEntity: authorNode,
+  author: ref(ID.author),
+  publisher: ref(ID.author),
+};
+---
+<BaseLayout title={SITE.title} description={SITE.description} ogType="website" page={homePage}>
+  <Fragment slot="hero">
+    <Hero
+      eyebrow={`Matrasontwikkelaar · sinds ${LOOPBAAN.startBeddenvak}`}
+      title={SITE.author.name}
+      text="Ik ontwerp en produceer koudschuim- en traagschuimmatrassen die perfecte ondersteuning en comfort bieden."
+      primaryLabel="Contact"
+      primaryHref="/contact"
+      secondaryLabel="Royal Health Foam"
+      secondaryHref={SITE.author.companyUrl}
+      imageLabel="beeld volgt"
+    />
+  </Fragment>
+
+  <div class="content single">
+    <div class="block">
+      <Badge variant="block">Over mij</Badge>
+      <div class="byline">
+        <Avatar size={46} />
+        <div>
+          <div class="nm">{SITE.author.name}</div>
+          <div class="rl">{SITE.author.role}</div>
+          <p class="bl">{SITE.author.byline.ervaring}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

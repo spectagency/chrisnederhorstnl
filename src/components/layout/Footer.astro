@@ -1,0 +1,24 @@
+---
+import { SITE, FOOTER_COLUMNS } from '../../data/site';
+const year = new Date().getFullYear();
+---
+<footer><div class="shell">
+  <div class="ft">
+    <div>
+      <div class="word">Chris Nederhorst</div>
+      <p>{SITE.description}</p>
+    </div>
+    {FOOTER_COLUMNS.map((col) => (
+      <div>
+        <h5>{col.title}</h5>
+        {col.links.map((link) => (
+          <a href={link.href}>{link.label}</a>
+        ))}
+      </div>
+    ))}
+  </div>
+  <div class="fb">
+    <div>© {SITE.since}–{year} {SITE.name} — alle rechten voorbehouden</div>
+    <div><a href={SITE.author.companyUrl}>{SITE.author.company}</a></div>
+  </div>
+</div></footer>

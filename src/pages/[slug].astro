@@ -1,0 +1,49 @@
+---
+import { getCollection } from 'astro:content';
+import ArticleLayout from '../layouts/ArticleLayout.astro';
+import { warnMetaLengths } from '../lib/content';
+
+export async function getStaticPaths() {
+  const artikelen = await getCollection('artikelen', ({ data }) => !data.draft);
+  warnMetaLengths(
+    'Artikelen',
+    artikelen.map((a) => ({
+      id: a.id,
+      titel: a.data.shortTitle ?? a.data.title,
+      description: a.data.description,
+    })),
+  );
+  return artikelen.map((entry) => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content, headings } = await entry.render();
+
+// Leestijd schatten op ~200 woorden per minuut. Het woordenaantal en de minuten
+// gaan ook het schema in (`wordCount`, `timeRequired`), dus ze worden hier één
+// keer berekend en doorgegeven in plaats van twee keer afgeleid.
+const words = entry.body.trim().split(/\s+/).length;
+const minutes = Math.max(1, Math.round(words / 200));
+const readingTime = `${minutes} min lezen`;
+---
+<ArticleLayout
+  title={entry.data.title}
+  shortTitle={entry.data.shortTitle}
+  description={entry.data.description}
+  lead={entry.data.lead}
+  publishDate={entry.data.publishDate}
+  updatedDate={entry.data.updatedDate}
+  readingTime={readingTime}
+  readingMinutes={minutes}
+  wordCount={words}
+  image={entry.data.image}
+  slug={entry.slug}
+  related={entry.data.related}
+  headings={headings}
+  toc={entry.data.toc}
+>
+  <Content />
+</ArticleLayout>

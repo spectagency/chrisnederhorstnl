@@ -1,0 +1,10 @@
+---
+// Eyebrow / blocklabel: uppercase accent-label met streepje ervoor.
+// variant 'block' = .blabel (binnen content), 'eyebrow' = .eyebrow (hero).
+interface Props {
+  variant?: 'block' | 'eyebrow';
+}
+const { variant = 'block' } = Astro.props;
+const cls = variant === 'eyebrow' ? 'eyebrow' : 'blabel';
+---
+<span class={cls}><slot /></span>

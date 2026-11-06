@@ -1,0 +1,26 @@
+---
+// Alleen de zichtbare navigatie. De bijbehorende BreadcrumbList-JSON-LD zit niet
+// hier maar in BaseLayout: die bouwt één `@graph` per pagina, waarin de
+// BreadcrumbList via `@id` aan de WebPage-node hangt. Een los script hier zou
+// een tweede, niet-gekoppelde graph opleveren.
+//
+// Geef daarom dezelfde `items` door aan zowel deze component als aan de
+// `breadcrumbs`-prop van BaseLayout.
+export interface Crumb {
+  label: string;
+  href?: string; // laatste crumb (huidige pagina) heeft geen href
+}
+
+interface Props {
+  items: Crumb[];
+}
+const { items } = Astro.props;
+---
+<nav class="crumb" aria-label="Kruimelpad">
+  {items.map((c, i) => (
+    <>
+      {c.href ? <a href={c.href}>{c.label}</a> : <span class="cur">{c.label}</span>}
+      {i < items.length - 1 && <span class="sep">/</span>}
+    </>
+  ))}
+</nav>

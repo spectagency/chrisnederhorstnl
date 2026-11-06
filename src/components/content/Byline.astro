@@ -1,0 +1,28 @@
+---
+// Auteursregel onder de tekst van elk artikel. Bewust lopende tekst en geen
+// kaart of avatar: de pagehead toont de auteur al met naam en datum, dit is de
+// afsluitende verantwoording eronder.
+//
+// De tekst staat in SITE.author.byline: één bron voor ArticleLayout en het
+// portretblok op de homepage. Hier staan de twee delen achter elkaar; de
+// homepage toont alleen `ervaring`, omdat de rol daar al boven het portret staat.
+//
+// De naam linkt naar de auteurspagina, behalve op die pagina zelf: daar zou het
+// een link naar het eigen adres zijn.
+//
+// Geen eigen marge: ArticleLayout zet dit als kind van `.main`, dat met
+// `gap: 34px` de ruimte al regelt. Een margin-top zou daar bovenop komen.
+import { SITE } from '../../data/site';
+
+const here = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isAuthorPage = here === SITE.author.path;
+---
+<div class="authorline">
+  <p class="al-label">Geschreven door</p>
+  <p class="al-text">
+    {isAuthorPage
+      ? <strong>{SITE.author.name}</strong>
+      : <a href={SITE.author.path}>{SITE.author.name}</a>
+    } – {SITE.author.byline.vak} {SITE.author.byline.ervaring}
+  </p>
+</div>

@@ -1,0 +1,26 @@
+---
+// Portret van de auteur. Staat op twee plekken met een verschillende maat: 46px
+// in het blok op de homepage en 30px in de pagehead van elk artikel. Eén
+// component, zodat een nieuwe foto op één plek wordt vervangen.
+//
+// De bron is 136×150 en dus niet vierkant; `object-fit: cover` in global.css
+// snijdt hem rond bij. Die maat is krap maar toereikend: 46px op een scherm met
+// hoge resolutie vraagt 92 fysieke pixels.
+import { Image } from 'astro:assets';
+import { SITE } from '../../data/site';
+import portret from '../../assets/brand/chris-nederhorst.jpg';
+
+interface Props {
+  /** Weergavemaat in CSS-pixels; bepaalt welke variant Astro uitlevert. */
+  size?: number;
+}
+const { size = 46 } = Astro.props;
+---
+<Image
+  class="av"
+  src={portret}
+  alt={`Portret van ${SITE.author.name}`}
+  width={size * 2}
+  height={size * 2}
+  loading="lazy"
+/>

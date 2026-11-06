@@ -1,0 +1,51 @@
+# Jaarlijkse rebuild, elke 1 april.
+#
+# De site is statisch: de ervaringsjaren uit src/data/loopbaan.ts ("38 jaar in
+# het beddenvak") staan als gewoon getal in de HTML, bevroren op het moment van
+# de laatste build. Ze rollen één keer per jaar over, in de maand van de ankers in
+# dat bestand. Deze trigger draait precies dan, en verder nooit.
+#
+# VOOR EEN ANDERE SITE: zet de maand in de cron hieronder gelijk aan de `maand`
+# van de ankers in src/data/loopbaan.ts. Hebben de ankers verschillende maanden,
+# zet dan per maand een cron-regel onder `schedule`.
+#
+# Strikt genomen kan hij weg: er wordt maandelijks aan de site gewerkt, dus na
+# april komt het getal vanzelf goed bij de eerstvolgende push. Het zou dan hooguit
+# een paar weken áchterlopen — 38 waar 39 mag staan — en dat is de onschuldige
+# kant van de fout. Hij staat er om die weken ook nog weg te nemen.
+#
+# EENMALIG INSTELLEN:
+#   1. Vercel → project chrisnederhorst.nl → Settings → Git → Deploy Hooks →
+#      maak er een aan op branch `main`. Je krijgt een URL terug.
+#   2. GitHub → repo → Settings → Secrets and variables → Actions →
+#      New repository secret, naam VERCEL_DEPLOY_HOOK, met die URL als waarde.
+#
+# Let op: GitHub zet een `schedule` stil na 60 dagen zonder activiteit in de repo.
+# Bij deze repo speelt dat niet — er wordt elke maand gecommit — maar na een lange
+# stilte is het het eerste om te controleren. Vandaar ook `workflow_dispatch`:
+# dan draai je hem met de hand vanuit het Actions-tabblad.
+name: Jaarlijkse rebuild
+
+on:
+  schedule:
+    # 1 april, 04:17 UTC. Een oneven minuut omdat GitHub geplande runs op het
+    # hele uur in een wachtrij zet die tientallen minuten kan oplopen.
+    - cron: '17 4 1 4 *'
+  workflow_dispatch:
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Vercel deploy hook aanroepen
+        env:
+          HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "Secret VERCEL_DEPLOY_HOOK ontbreekt — zie de toelichting boven in dit bestand." >&2
+            exit 1
+          fi
+          # -f laat curl falen op een 4xx/5xx, zodat een ingetrokken hook hier
+          # zichtbaar wordt in plaats van stilletjes niets te doen.
+          curl -fsS -X POST "$HOOK" -o /dev/null
+          echo "Rebuild aangevraagd."
