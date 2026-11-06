@@ -602,6 +602,58 @@
     padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
   .certrow .logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
+  /* --- One-pager (homepage): secties, ontwerpen, merken ---------------- */
+
+  /* Portretkaartje boven de sectielinks in de zijbalk. */
+  .sidecard { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+  .sidecard-av { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; flex: none;
+    border: 2px solid var(--card); box-shadow: 0 0 0 1px var(--line); }
+  .sidecard-nm { font-family: var(--disp); font-weight: 800; font-size: 16px; color: var(--ink); }
+  .sidecard-rl { font-size: 13px; color: var(--ink-faint); line-height: 1.35; }
+
+  /* Elke sectie begint met een scheidingslijn, behalve de eerste. */
+  .sectie { scroll-margin-top: calc(var(--topbar) + 24px); }
+  .sectie + .sectie { border-top: 1px solid var(--line); padding-top: 40px; }
+  .sectie-titel { font-family: var(--disp); font-weight: 800; font-size: 32px; letter-spacing: -.02em;
+    line-height: 1.15; margin-bottom: 18px; }
+  .hero { scroll-margin-top: var(--topbar); }
+
+  /* Ontwerpenraster: drie kolommen zoals de oude site, elk een eigen stapel. */
+  .ontwerpen-kop { font-size: 18px; font-weight: 700; margin: 34px 0 16px; }
+  /* minmax(0, 1fr): een kale 1fr krimpt niet onder de breedte van zijn inhoud,
+     en de beelden van 420px duwden de pagina op mobiel dan buiten beeld. */
+  .ontwerpen { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; align-items: start; }
+  .ontwerpen-kolom { display: flex; flex-direction: column; gap: 14px; }
+  .ontwerp { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+  .ontwerp img { display: block; width: 100%; height: auto; border-bottom: 1px solid var(--line-soft); }
+  .ontwerp h4 { font-family: var(--disp); font-weight: 800; font-size: 18px; color: var(--accent);
+    padding: 12px 14px 2px; }
+  .ontwerp p { font-size: 13.5px; line-height: 1.5; color: var(--ink-soft); padding: 0 14px 14px;
+    white-space: pre-line; }
+
+  /* Merkkaarten onder "Kennis van zaken". */
+  .merken { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 18px 0 30px; }
+  .merk { display: flex; flex-direction: column; gap: 4px; padding: 14px; background: var(--card);
+    border: 1px solid var(--line); border-radius: var(--r); color: inherit;
+    transition: border-color .2s ease, transform .2s ease; }
+  .merk:hover { border-color: var(--accent-line); transform: translateY(-2px); }
+  .merk-logo { display: flex; align-items: center; justify-content: center; height: 70px; margin-bottom: 8px; }
+  .merk-logo img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
+  .merk h4 { font-size: 15.5px; font-weight: 700; }
+  .merk:hover h4 { color: var(--accent-deep); }
+  .merk p { font-size: 13.5px; color: var(--ink-soft); line-height: 1.45; }
+
+  /* Rij logo's van de informatiesites. */
+  .infosites { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
+  .infosites a { display: block; border-radius: 12px; overflow: hidden; border: 1px solid var(--line);
+    transition: transform .2s ease, border-color .2s ease; }
+  .infosites a:hover { transform: translateY(-2px); border-color: var(--accent-line); }
+  .infosites img { display: block; width: 80px; height: 80px; }
+
+  /* Portret bovenaan "Over mij": klein en links, zoals op de oude site, in
+     plaats van de volle breedte die .prose aan beelden geeft. */
+  #over-mij .prose > p:first-child img { width: 135px; border-radius: 50%; margin: 0 0 8px; }
+
   /* ==========================================================================
      12. VOETTEKST
      ========================================================================== */
@@ -716,12 +768,13 @@
   .hero h1 { font-size: 31px; }
   .hero .pic { min-height: 190px; }
   /* Contextuele linkerkolom valt weg; content wordt één kolom. <MobileToc> vervangt de inhoudsopgave. */
-  .wrap { grid-template-columns: 1fr; gap: 0; padding: 22px 0 56px; }
+  .wrap { grid-template-columns: minmax(0, 1fr); gap: 0; padding: 22px 0 56px; }
   .onecol { padding: 22px 0 56px; }
   .nf { padding: 44px 0 64px; }
   .nf h1 { font-size: 30px; }
   .side { display: none; }
   .guidegrid { grid-template-columns: 1fr; }
+  .merken { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ft { grid-template-columns: 1fr 1fr; gap: 24px; }
   .fb { flex-direction: column; align-items: flex-start; }
 }
@@ -730,6 +783,7 @@
   .brand .word { font-size: 15px; }
   .mark { width: 32px; height: 32px; }
   .ft { grid-template-columns: 1fr; }
+  .ontwerpen, .merken { grid-template-columns: minmax(0, 1fr); }
   .hero h1 { font-size: 26px; }
   .pagehead h1 { font-size: 28px !important; }
 }

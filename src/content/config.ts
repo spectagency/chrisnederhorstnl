@@ -55,4 +55,24 @@ const artikelen = defineCollection({
     }),
 });
 
-export const collections = { artikelen };
+// Secties van de homepage. De homepage is (nog) een one-pager zoals de oude
+// chrisnederhorst.nl: elke sectie is één markdownbestand, in de volgorde van
+// `order`. De bestandsnaam is het anker (#koudschuim-informatie). Wat geen lopende
+// tekst is (het ontwerpenraster, de merken, het contactblok) hangt index.astro
+// er per sectie als component onder of boven; zie SECTIE_EXTRA daar.
+//
+// Bewust een losse collectie en geen artikelen: zo wordt een sectie geen eigen
+// URL. Moet een sectie later een eigen pagina worden, dan verhuist het bestand
+// naar artikelen/ en krijgt het daar een `nav`-blok.
+const secties = defineCollection({
+  type: 'content',
+  // Beelden staan gewoon in de markdown-body, op de plek waar ze op de live
+  // site staan.
+  schema: z.object({
+    title: tekst('title'), // de <h2> boven de sectie
+    navLabel: tekst('navLabel'), // korte linktekst in de zijbalk, zoals op de live site
+    order: z.number(),
+  }),
+});
+
+export const collections = { artikelen, secties };

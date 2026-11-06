@@ -5,13 +5,17 @@ import Badge from '../ui/Badge.astro';
 import Button from '../ui/Button.astro';
 
 interface Props {
+  /** Anker op de herosectie, bv. voor een link "Intro" in de zijbalk. */
+  id?: string;
   eyebrow: string;
   title: string;
-  text: string;
-  primaryLabel: string;
-  primaryHref: string;
-  secondaryLabel: string;
-  secondaryHref: string;
+  text?: string;
+  // De knoppen zijn optioneel: zonder label en href valt de knop weg, zonder
+  // allebei valt de hele knoppenrij weg.
+  primaryLabel?: string;
+  primaryHref?: string;
+  secondaryLabel?: string;
+  secondaryHref?: string;
   /**
    * Beeld in de rechterkolom. Het vlak is hoger dan breed-op-hoogte van de
    * meeste bronbeelden, dus het beeld wordt met object-fit: cover bijgesneden —
@@ -24,16 +28,20 @@ interface Props {
   imageLabel?: string;
 }
 const props = Astro.props;
+const hasPrimary = !!(props.primaryLabel && props.primaryHref);
+const hasSecondary = !!(props.secondaryLabel && props.secondaryHref);
 ---
-<div class="shell"><section class="hero"><div class="hero-inner">
+<div class="shell"><section class="hero" id={props.id}><div class="hero-inner">
   <div class="copy">
     <Badge variant="eyebrow">{props.eyebrow}</Badge>
     <h1>{props.title}</h1>
-    <p>{props.text}</p>
-    <div class="cta-row">
-      <Button href={props.primaryHref} variant="solid" hero>{props.primaryLabel} →</Button>
-      <Button href={props.secondaryHref} variant="ghost" hero>{props.secondaryLabel}</Button>
-    </div>
+    {props.text && <p>{props.text}</p>}
+    {(hasPrimary || hasSecondary) && (
+      <div class="cta-row">
+        {hasPrimary && <Button href={props.primaryHref!} variant="solid" hero>{props.primaryLabel} →</Button>}
+        {hasSecondary && <Button href={props.secondaryHref!} variant="ghost" hero>{props.secondaryLabel}</Button>}
+      </div>
+    )}
   </div>
   {props.image ? (
     <div class="pic has-img">

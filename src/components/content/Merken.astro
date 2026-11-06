@@ -1,0 +1,27 @@
+---
+// "Kennis van zaken": de matrasmerken van Chris als kaarten, daarna de
+// informatiesites als rij logo's. Tekst letterlijk van de oude site.
+import { Image } from 'astro:assets';
+import { MERKEN, INFOSITES } from '../../data/merken';
+---
+<div class="merken">
+  {MERKEN.map((m) => (
+    <a class="merk" href={m.url} target="_blank" rel="noopener">
+      <span class="merk-logo"><Image src={m.logo} alt={m.logoAlt} width={440} /></span>
+      <h4>{m.naam}</h4>
+      <p>{m.tekst}</p>
+    </a>
+  ))}
+</div>
+
+<div class="prose">
+  <h3>Ontdek meer over een onbekommerde nachtrust</h3>
+  <p>Voor de ontwikkeling van mijn matrassen wilde ik echt alles weten. Niet alleen over de materialen, maar ook over slapen.</p>
+  <p>Ik merkte dat mijn klanten ook steeds vaker wilde weten waar ze ’s nachts nu precies op slapen. Daarom ben ik in 2001 begonnen met het delen van mijn opgedane kennis op informatie sites zoals traagschuim.info en matras.info. Sinds de oprichting hebben honderdduizenden bezoekers meer ontdekt over matrassen en nachtrust.</p>
+</div>
+
+<div class="infosites">
+  {INFOSITES.map((s) => (
+    <a href={s.url} target="_blank" rel="noopener"><Image src={s.logo} alt={s.alt} width={80} height={80} /></a>
+  ))}
+</div>

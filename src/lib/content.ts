@@ -3,6 +3,16 @@ import { SITE } from '../data/site';
 // Gedeelde content-helpers.
 
 /**
+ * Of er artikelen zijn (bestanden met een _ ervoor, zoals _template.md, tellen
+ * niet mee). Zolang de collectie leeg is, waarschuwt Astro bij élke
+ * getCollection('artikelen') — en het menu vraagt die op elke pagina op. Die
+ * ruis zou echte waarschuwingen, zoals het vangnet voor ervaringsjaren,
+ * onzichtbaar maken. Deze controle kan weg zodra er artikelen zijn.
+ */
+export const HEEFT_ARTIKELEN =
+  Object.keys(import.meta.glob('/src/content/artikelen/[!_]*.md')).length > 0;
+
+/**
  * Waarschuwt tijdens de build over titels en beschrijvingen die in de
  * zoekresultaten worden afgekapt.
  *

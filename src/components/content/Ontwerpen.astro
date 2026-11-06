@@ -1,0 +1,20 @@
+---
+// Raster met matrasontwerpen en mijlpalen, onder "Ontwikkelen van matrassen".
+// Drie kolommen zoals op de oude site; op mobiel komen ze onder elkaar.
+import { Image } from 'astro:assets';
+import { ONTWERP_KOLOMMEN } from '../../data/ontwerpen';
+---
+<h3 class="ontwerpen-kop">Hieronder een opsomming van mijn matras ontwerpen:</h3>
+<div class="ontwerpen">
+  {ONTWERP_KOLOMMEN.map((kolom) => (
+    <div class="ontwerpen-kolom">
+      {kolom.map((o) => (
+        <article class="ontwerp">
+          <Image src={o.beeld} alt="" width={420} />
+          <h4>{o.jaar}</h4>
+          <p>{o.tekst}</p>
+        </article>
+      ))}
+    </div>
+  ))}
+</div>

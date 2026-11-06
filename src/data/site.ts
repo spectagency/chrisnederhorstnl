@@ -45,9 +45,9 @@ export const SITE = {
     jobTitle: 'Matrasontwikkelaar',
     company: 'Royal Health Foam',
     companyUrl: 'https://www.healthfoam.com',
-    // TODO: pad van de over-mij-pagina zodra die er is. Byline en JSON-LD
-    // linken hiernaartoe; zolang de pagina niet bestaat, is dat een dode link.
-    path: '/over-mij',
+    // Waar het verhaal over Chris staat. Nu de sectie "Over mij" op de
+    // one-pager; wordt het een eigen pagina, pas dan alleen dit pad aan.
+    path: '/#over-mij',
     // Auteursregel onder elk artikel (src/components/content/Byline.astro), in
     // twee delen: de homepage toont alleen `ervaring`, omdat `role` daar al als
     // aparte regel boven het portret staat.
@@ -63,12 +63,15 @@ export const SITE = {
   },
 } as const;
 
+// Contact is (nog) een sectie op de homepage, net als op de oude site.
+export const CONTACT_HREF = '/#contact';
+
 // Footerkolommen. TODO: vullen zodra de pagina's er zijn.
 export const FOOTER_COLUMNS = [
   {
     title: 'Over',
     links: [
-      { label: 'Contact', href: '/contact' },
+      { label: 'Contact', href: '/#contact' },
       { label: 'Disclaimer', href: '/disclaimer' },
       { label: 'Sitemap', href: '/sitemap-overzicht' },
     ],

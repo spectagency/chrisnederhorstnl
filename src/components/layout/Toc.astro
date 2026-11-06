@@ -1,5 +1,5 @@
 ---
-// Inhoudsopgave voor artikelen. Vult de linkerkolom (dezelfde plek als het oude
+// Inhoudsopgave voor artikelen en voor de secties van de homepage. Vult de linkerkolom (dezelfde plek als het oude
 // navigatiemenu) met de H2-koppen van het artikel. Wordt alleen gerenderd als er
 // genoeg koppen zijn — die afweging maakt ArticleLayout. Op mobiel valt deze weg
 // (zie global.css) en neemt <MobileToc> het over.
@@ -13,6 +13,9 @@ interface Props {
 const { headings } = Astro.props;
 ---
 <aside class="side toc" id="toc" aria-label="Op deze pagina">
+  {/* Optioneel blok boven de lijst; de homepage zet hier het portret, zoals
+      bovenin de zijbalk van de oude chrisnederhorst.nl. */}
+  <slot name="intro" />
   <div class="group">
     <h4>Op deze pagina</h4>
     <nav>
@@ -23,12 +26,10 @@ const { headings } = Astro.props;
       ))}
     </nav>
   </div>
-  {/* Geen advieshulplijn maar een neutrale verwijzing: de site geeft geen advies
-      over merken of modellen. */}
   <div class="help">
-    <h5>Iets aan te merken?</h5>
-    <p>Klopt er iets niet in dit artikel, of mist u iets? Laat het weten via het contactadres.</p>
-    <a href="/contact" class="cta">Naar contact →</a>
+    <h5>Contact</h5>
+    <p>Een vraag of een reactie? Neem gerust contact op.</p>
+    <a href="/#contact" class="cta">Naar contact →</a>
   </div>
 </aside>
 

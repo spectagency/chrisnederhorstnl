@@ -1,9 +1,10 @@
 ---
 import { getCollection } from 'astro:content';
 import ArticleLayout from '../layouts/ArticleLayout.astro';
-import { warnMetaLengths } from '../lib/content';
+import { HEEFT_ARTIKELEN, warnMetaLengths } from '../lib/content';
 
 export async function getStaticPaths() {
+  if (!HEEFT_ARTIKELEN) return [];
   const artikelen = await getCollection('artikelen', ({ data }) => !data.draft);
   warnMetaLengths(
     'Artikelen',

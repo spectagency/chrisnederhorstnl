@@ -30,6 +30,27 @@ Weggehaald, want niet nodig voor een persoonlijke site: alle koudschuimcontent, 
 FAQ-collectie, de encyclopedie, de oude redirects en de uil als logo. Moet een
 van die onderdelen terugkomen, haal hem dan uit die repo.
 
+## Huidige stand: de oude site getrouw overgezet
+
+De homepage is nu een one-pager, zo dicht mogelijk bij de oude site. Bewust:
+eerst alles over, daarna beslissen over de opbouw.
+
+| Wat | Waar |
+|---|---|
+| Lopende tekst per sectie (letterlijk van de oude site) | `src/content/secties/*.md`, volgorde via `order` |
+| Ontwerpenraster (25 items, 3 kolommen zoals live) | `src/data/ontwerpen.ts` + `components/content/Ontwerpen.astro` |
+| Merken en infosites | `src/data/merken.ts` + `components/content/Merken.astro` |
+| Opbouw van de pagina, zijbalk met sectielinks | `src/pages/index.astro` |
+| Beelden van de oude site | `src/assets/live/` |
+
+De tekst is níet geredigeerd: tikfouten, herhalingen en tegenstrijdigheden van de
+oude site staan er nog in (bv. "Spriaalbodem", "cabdaar", 1987 vs. 1988, "2026"
+als vast jaartal). Alleen de ervaringsjaren ("38 jaar", "28 jaar", "sinds 1998")
+zijn vervangen door plaatshouders die zichzelf doortellen.
+
+`src/content/artikelen/` is leeg maar blijft bestaan: daar komen losse pagina's
+als de one-pager wordt opgesplitst.
+
 ## Stack
 
 | Onderdeel | Keuze |
@@ -63,9 +84,10 @@ Afgeleid van de oude chrisnederhorst.nl, in de opzet van koudschuim.info:
 
 Gemarkeerd met `TODO` in de code (`grep -rn TODO src`). De belangrijkste:
 
-- [ ] Informatiearchitectuur: welke pagina's, en de navigatiegroepen in
-      `src/data/nav-groups.ts` (nu een voorzet op basis van de oude secties)
-- [ ] Homepage (`src/pages/index.astro`) en `over-mij.md` uitschrijven
+- [ ] Opbouw: one-pager houden of opsplitsen in losse pagina's (navigatiegroepen
+      in `src/data/nav-groups.ts`; het topmenu is nu leeg)
+- [ ] Tekst redigeren (tikfouten, dubbelingen tussen secties, vaste jaartallen)
+- [ ] Contactformulier: het oude postte naar PHP; keuze voor een oplossing nodig
 - [ ] E-mailadres en "online sinds"-jaar bevestigen in `src/data/site.ts`
 - [ ] Beter portret: het huidige is 120 px, te klein voor groter gebruik
 - [ ] Favicons en `public/og-default.jpg` zijn tijdelijk (initialen/naam op blauw)

@@ -14,6 +14,7 @@
 
 import { getCollection } from 'astro:content';
 import { NAV_GROUP_TITLES, type NavGroupTitle } from './nav-groups';
+import { HEEFT_ARTIKELEN } from '../lib/content';
 
 export interface NavItem {
   label: string;
@@ -38,7 +39,9 @@ const STATIC_ITEMS: Array<NavItem & { group: NavGroupTitle; order: number }> = [
  * Astro cachet getCollection, dus dit is goedkoop genoeg om per pagina te doen.
  */
 export async function getNavGroups(): Promise<NavGroup[]> {
-  const artikelen = await getCollection('artikelen', ({ data }) => !data.draft && !!data.nav);
+  const artikelen = HEEFT_ARTIKELEN
+    ? await getCollection('artikelen', ({ data }) => !data.draft && !!data.nav)
+    : [];
 
   const entries = [
     ...artikelen.map((entry) => ({

@@ -1,13 +1,37 @@
 ---
-// TODO: de echte homepage. Dit is het startpunt: hero en portretblok in de
-// opmaak van koudschuim.info, met de kern van de live site als tekst.
+// De homepage als one-pager, zo dicht mogelijk bij de oude chrisnederhorst.nl:
+// de secties onder elkaar, met links een meescrollende
+// zijbalk met portret en sectielinks (op de oude site de vaste donkere zijbalk).
+//
+// De lopende tekst per sectie staat in src/content/secties/; wat geen lopende
+// tekst is, hangt SECTIE_EXTRA hieronder er per sectie onder.
+//
+// Dit is bewust een tussenstap: eerst de oude site getrouw overzetten, daarna
+// beslissen over de opbouw (losse pagina's, wat er blijft, wat herschreven wordt).
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Hero from '../components/content/Hero.astro';
-import Avatar from '../components/content/Avatar.astro';
-import Badge from '../components/ui/Badge.astro';
+import Toc from '../components/layout/Toc.astro';
+import MobileToc from '../components/layout/MobileToc.astro';
+import Ontwerpen from '../components/content/Ontwerpen.astro';
+import Merken from '../components/content/Merken.astro';
 import { SITE } from '../data/site';
 import { ID, authorNode, ref, type LdNode } from '../lib/schema';
-import { LOOPBAAN } from '../data/loopbaan';
+import portret from '../assets/brand/chris-nederhorst.jpg';
+
+const secties = (await getCollection('secties')).sort((a, b) => a.data.order - b.data.order);
+const gerenderd = await Promise.all(
+  secties.map(async (s) => ({ ...s, Content: (await s.render()).Content })),
+);
+
+// Componenten onder de tekst van een sectie, op bestandsnaam.
+const SECTIE_EXTRA: Record<string, typeof Ontwerpen> = {
+  'ontwikkelen-van-matrassen': Ontwerpen,
+  'kennis-van-zaken': Merken,
+};
+
+// Zijbalk: de secties, met de labels van de oude site.
+const navItems = secties.map((s) => ({ slug: s.slug, text: s.data.navLabel }));
 
 // De homepage is de ankerpagina van de persoon: de WebPage-node hangt hier
 // rechtstreeks aan de Person, zodat een crawler die alleen de homepage ziet
@@ -22,31 +46,39 @@ const homePage: LdNode = {
   publisher: ref(ID.author),
 };
 ---
-<BaseLayout title={SITE.title} description={SITE.description} ogType="website" page={homePage}>
-  <Fragment slot="hero">
-    <Hero
-      eyebrow={`Matrasontwikkelaar · sinds ${LOOPBAAN.startBeddenvak}`}
-      title={SITE.author.name}
-      text="Ik ontwerp en produceer koudschuim- en traagschuimmatrassen die perfecte ondersteuning en comfort bieden."
-      primaryLabel="Contact"
-      primaryHref="/contact"
-      secondaryLabel="Royal Health Foam"
-      secondaryHref={SITE.author.companyUrl}
-      imageLabel="beeld volgt"
-    />
-  </Fragment>
-
-  <div class="content single">
-    <div class="block">
-      <Badge variant="block">Over mij</Badge>
-      <div class="byline">
-        <Avatar size={46} />
-        <div>
-          <div class="nm">{SITE.author.name}</div>
-          <div class="rl">{SITE.author.role}</div>
-          <p class="bl">{SITE.author.byline.ervaring}</p>
-        </div>
+<BaseLayout
+  title={`${SITE.author.name} - Matrasontwikkelaar en matrasexpert`}
+  description={SITE.description}
+  ogType="website"
+  layout="aside"
+  page={homePage}
+>
+  <Toc slot="aside" headings={navItems}>
+    <div class="sidecard" slot="intro">
+      <Image src={portret} alt={`Portret van ${SITE.author.name}`} width={160} height={160} class="sidecard-av" />
+      <div>
+        <div class="sidecard-nm">{SITE.author.name}</div>
+        <div class="sidecard-rl">Bevlogen matrasontwikkelaar en -expert</div>
       </div>
     </div>
+  </Toc>
+
+  <div class="content single">
+    {gerenderd.map(({ slug, data, Content }) => {
+      const Extra = SECTIE_EXTRA[slug];
+      return (
+        <section class="sectie" id={slug}>
+          <h2 class="sectie-titel">{data.title}</h2>
+          <div class="prose"><Content /></div>
+          {Extra && <Extra />}
+        </section>
+      );
+    })}
   </div>
+
+  <MobileToc
+    title="Op deze pagina"
+    label="Secties"
+    items={navItems.map((n) => ({ id: n.slug, label: n.text }))}
+  />
 </BaseLayout>
